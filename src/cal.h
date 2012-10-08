@@ -1,3 +1,6 @@
+#ifndef CAL_H
+#define CAL_H
+
 #include <vector.h>
 
 
@@ -7,4 +10,6 @@ struct cal {
 
 struct cal * cal_init ();
 void cal_destroy (struct cal *cal);
+
+#endif /* CAL_H */
 
