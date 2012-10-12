@@ -1,5 +1,6 @@
-#include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "datetime.h"
 
 
@@ -18,6 +19,18 @@ void datetime_destroy(struct datetime *date)
     date_destroy(date->date);
     time_destroy(date->time);
     free(date);
+}
+
+
+void datetime_to_string (struct datetime *dt, char *str)
+{
+    if (dt->date!=NULL && dt->time!=NULL)
+        sprintf(str, "%d-%d-%d %d:%d", dt->date->year, dt->date->month, dt->date->day,
+                                       dt->time->hour, dt->time->minute);
+    else if (dt->date!=NULL)
+        sprintf(str, "%d-%d-%d", dt->date->year, dt->date->month, dt->date->day);
+    else
+        str[0] = '\0';
 }
 
 
