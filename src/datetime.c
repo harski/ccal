@@ -1,11 +1,11 @@
-#include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include "datetime.h"
 
 
 struct datetime * datetime_init ()
 {
-    struct datetime *dt = malloc(sizeof(datetime));
+    struct datetime *dt = malloc(sizeof(struct datetime));
     dt->date = NULL;
     dt->time = NULL;
 
@@ -19,18 +19,18 @@ struct date * date_init_p (const char *str)
     char buf[5];
     struct date *d = malloc(sizeof(struct date));
 
-    snprintf(buf, str, 4);
+    strncpy(buf, str, 4);
     buf[4] = '\0';
-    date->year = atoi(buf);
+    d->year = atoi(buf);
 
-    snprintf(buf, str+4, 2);
+    strncpy(buf, str+4, 2);
     buf[2] = '\0';
-    date->month = atoi(buf);
+    d->month = atoi(buf);
 
-    snprintf(buf, str+6, 2);
-    date->day = atoi(buf);
+    strncpy(buf, str+6, 2);
+    d->day = atoi(buf);
 
-    return date;
+    return d;
 }
 
 
@@ -41,10 +41,10 @@ struct time *time_init_p (const char *str)
 
     buf[2] = '\0';
 
-    snprintf(buf, str, 2);
+    strncpy(buf, str, 2);
     t->hour = atoi(buf);
 
-    snprintf(buf, str+2, 2);
+    strncpy(buf, str+2, 2);
     t->minute = atoi(buf);
 
     return t;

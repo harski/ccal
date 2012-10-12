@@ -1,7 +1,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <strign.h>
+#include <string.h>
+#include <vector.h>
+
+#include "cal.h"
+#include "entry.h"
+#include "getline.h"
 
 #define READ_BUF_SIZE 512
 
@@ -9,7 +14,7 @@
 void strip (char *str, const size_t len)
 {
     unsigned whitespace_in_start = 0;
-    unsigned whitespace_at_end 0;
+    unsigned whitespace_at_end = 0;
 
     while (str[whitespace_in_start] == ' ' || str[whitespace_in_start] == '\n')
         ++whitespace_in_start;
@@ -42,44 +47,44 @@ int str_to_key_value_pairs (const char *str, const char separator, char *key, si
     strncpy(key, str, separator_index);
     key[separator_index] = '\0';
 
-    strncpy(value, str+separator_index+1, strlen(str+separator_index+1);
+    strncpy(value, str+separator_index+1, strlen(str+separator_index+1));
     key[strlen(str+separator_index+1)+1] = '\0';
 
     return 1;
 }
 
 
-static inline void removequotes(char *str)
+static inline void removequotes (char *str)
 {
     if (str[0] == '"') {
         size_t len = strlen(str);
         if (str[len-1] == '"') {
-            memmove(str, str+1, len-2;
+            memmove(str, str+1, len-2);
             str[len-2] = '\0';
         }
     }
 }
 
-int entry_parse_properties(cal, key, value)
+int entry_parse_properties (struct entry *entry, char *key, char *value)
 {
-    /* TODO: check if content */
+    /* check if content */
     if(!strcmp("header", key)) {
-        cal->header = malloc(sizeof(char)*(strlen(value)+1));
-        strcpy(cal->header, value);
+        entry->header = malloc(sizeof(char)*(strlen(value)+1));
+        strcpy(entry->header, value);
     } else if (!strcmp("description", key)) {
-        cal->description = malloc(sizeof(char)*(strlen(value)+1));
-        strcpy(cal->description, value);
+        entry->description = malloc(sizeof(char)*(strlen(value)+1));
+        strcpy(entry->description, value);
     } else if (!strcmp("category", key)) {
-        cal->category = malloc(sizeof(char)*(strlen(value)+1));
-        strcpy(cal->category, value);
+        entry->category = malloc(sizeof(char)*(strlen(value)+1));
+        strcpy(entry->category, value);
     } else if (!strcmp("date-start", key)) {
-        cal->start->date = date_init_p(value);
+        entry->start->date = date_init_p(value);
     } else if (!strcmp("date-end", key)) {
-        cal->end->date  = date_init_p(value);
+        entry->end->date  = date_init_p(value);
     } else if (!strcmp("time-start", key)) {
-        cal->start->time = time_init_p(value);
+        entry->start->time = time_init_p(value);
     } else if (!strcmp("time-end", key)) {
-        cal->end->time = time_init_p(value);
+        entry->end->time = time_init_p(value);
     }
 
     return 1;
@@ -90,8 +95,8 @@ int load_cal_file (struct cal *cal, const char *filepath)
 {
     FILE *file = fopen(filepath, "r");
     size_t buffer_len = READ_BUF_SIZE;
-    char buffer = malloc(sizeof(char)*READ_BUF_SIZE);
-    ssize_t retval;
+    char *buffer = malloc(sizeof(char)*READ_BUF_SIZE);
+    int retval;
     int entry_open = 0;
     unsigned int line = 0;
     struct entry *entry;
@@ -99,7 +104,7 @@ int load_cal_file (struct cal *cal, const char *filepath)
     char key[READ_BUF_SIZE];
     char value[READ_BUF_SIZE];
 
-    while (-1 != (retval = getline(&buffer, buffer_len))) {
+    while (0 < (retval = getline_custom(&buffer, &buffer_len, file))) {
         ++line;
         if (retval <= 1)
             continue;
@@ -138,7 +143,7 @@ int load_cal_file (struct cal *cal, const char *filepath)
             strip(value, strlen(value));
             removequotes(value);
 
-            entry_parse_properties(cal, key, value);
+            entry_parse_properties(entry, key, value);
         }
 
     }

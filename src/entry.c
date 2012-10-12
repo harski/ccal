@@ -1,16 +1,13 @@
 #include <stdlib.h>
 #include "entry.h"
 
-static inline nfree(void * ptr)
-{
-    if (ptr==NULL)
-        free(ptr);
-}
-
 
 struct entry *entry_init()
 {
     struct entry *entry = malloc(sizeof(struct entry));
+    if (entry==NULL)
+        return NULL;
+
     entry->header = NULL;
     entry->description = NULL;
     entry->category = NULL;
@@ -23,11 +20,11 @@ struct entry *entry_init()
 
 void entry_destroy (struct entry *entry)
 {
-    nfree((void *)entry->header);
-    nfree((void *)entry->description);
-    nfree((void *)entry->category);
-    nfree((void *)entry->start);
-    nfree((void *)entry->end);
+    free(entry->header);
+    free(entry->description);
+    free(entry->category);
+    free(entry->start);
+    free(entry->end);
     free(entry);
 }
 

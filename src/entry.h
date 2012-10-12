@@ -1,6 +1,7 @@
 #ifndef ENTRY_H
 #define ENTRY_H
 
+#include "datetime.h"
 
 struct entry {
     char *header;

@@ -1,6 +1,7 @@
 
 #include <stdlib.h>
 #include "cal.h"
+#include "entry.h"
 
 
 struct cal * cal_init ()
@@ -23,7 +24,11 @@ struct cal * cal_init ()
 
 void cal_destroy (struct cal *cal)
 {
-    vector_destroy_all(cal->entries);
+    while (cal->entries->elements != 0) {
+        entry_destroy(vector_remove(cal->entries, cal->entries->elements -1));
+    }
+
+    vector_destroy(cal->entries);
     free(cal);
 }
 
