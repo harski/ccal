@@ -19,6 +19,7 @@ struct datetime {
 };
 
 struct datetime * datetime_init();
+void datetime_destroy(struct datetime *date);
 
 struct date * date_init_p (const char *str);
 void date_destroy (struct date * date);

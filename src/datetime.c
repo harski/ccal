@@ -13,6 +13,14 @@ struct datetime * datetime_init ()
 }
 
 
+void datetime_destroy(struct datetime *date)
+{
+    date_destroy(date->date);
+    time_destroy(date->time);
+    free(date);
+}
+
+
 /* TODO: check that buf is numeric */
 struct date * date_init_p (const char *str)
 {
@@ -31,6 +39,12 @@ struct date * date_init_p (const char *str)
     d->day = atoi(buf);
 
     return d;
+}
+
+
+void date_destroy (struct date * date)
+{
+    free(date);
 }
 
 
