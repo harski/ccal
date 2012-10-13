@@ -159,6 +159,7 @@ int main(void)
 {
     struct cal *cal = cal_init();
     load_cal_file(cal, "../cal.dat");
+    cal_destroy(cal);
     return 0;
 }
 
