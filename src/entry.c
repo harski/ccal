@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include "entry.h"
 
@@ -27,4 +28,23 @@ void entry_destroy (struct entry *entry)
     free(entry->end);
     free(entry);
 }
+
+
+void entry_dump (struct entry *entry)
+{
+    char start[20];
+    char end[20];
+
+    datetime_to_string(entry->start, start);
+    datetime_to_string(entry->end, end);
+
+    printf("%s\n", entry->header);
+    printf("%s\n", entry->description);
+
+    if (entry->category!=NULL)
+        printf("Category: %s\n", entry->category);
+
+    printf("%s -> %s\n", start, end);
+}
+
 

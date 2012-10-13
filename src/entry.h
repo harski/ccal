@@ -15,5 +15,7 @@ struct entry {
 struct entry *entry_init();
 void entry_destroy (struct entry *entry);
 
+void entry_dump (struct entry *entry);
+
 #endif /* ENTRY_H */
 
