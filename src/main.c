@@ -19,8 +19,10 @@ void strip (char *str, const size_t len)
     while (str[whitespace_in_start] == ' ' || str[whitespace_in_start] == '\n')
         ++whitespace_in_start;
 
-    if (whitespace_in_start == len)
+    if (whitespace_in_start == len) {
+        str[0] = '\0';
         return;
+    }
 
     while (str[len-1-whitespace_at_end] == ' ' || str[len-1-whitespace_at_end] == '\n')
         ++whitespace_at_end;
