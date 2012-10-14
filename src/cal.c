@@ -13,12 +13,12 @@ struct cal * cal_init ()
         return NULL;
 
     cal->entries = vector_init();
-    
+
     if (cal->entries == NULL) {
         free(cal);
         return NULL;
     }
-    
+
     return cal;
 }
 
@@ -44,6 +44,22 @@ void cal_dump (const struct cal *cal)
             printf("\n");
         }
     }
+
+}
+
+
+bool cal_save (const struct cal *cal, const char *filename)
+{
+    FILE *file = fopen(filename, "w");
+
+    if (file==NULL)
+        return false;
+
+    for (unsigned int i=0; i < cal->entries->elements; ++i)
+        entry_save(file, (struct entry *) vector_get(cal->entries, i));
+
+    fclose(file);
+    return true;
 
 }
 
