@@ -21,6 +21,44 @@ struct entry *entry_init()
 }
 
 
+bool entry_save (FILE *file, const struct entry *entry)
+{
+    fprintf(file, "ENTRY-START\n");
+    fprintf(file, "header=\"%s\"\n", entry->header);
+
+    if (entry->description!=NULL)
+        fprintf(file, "description=\"%s\"\n", entry->description);
+
+    if (entry->start != NULL) {
+        if (entry->start->date != NULL) {
+            fprintf(file, "start-date=%d%d%d\n", entry->start->date->year,
+                    entry->start->date->month, entry->start->date->day);
+        }
+
+        if (entry->start->time != NULL) {
+            fprintf(file, "start-time=%d%d\n", entry->start->time->hour,
+                    entry->start->time->minute);
+        }
+    }
+
+    if (entry->end != NULL) {
+        if (entry->end->date != NULL) {
+            fprintf(file, "end-date=%d%d%d\n", entry->end->date->year,
+                    entry->end->date->month, entry->end->date->day);
+        }
+
+        if (entry->end->time != NULL) {
+            fprintf(file, "end-time=%d%d\n", entry->end->time->hour,
+                    entry->end->time->minute);
+        }
+    }
+
+    fprintf(file, "ENTRY-END\n");
+
+    return true;
+}
+
+
 void entry_destroy (struct entry *entry)
 {
     free(entry->header);
