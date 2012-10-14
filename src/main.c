@@ -1,12 +1,16 @@
+#define _POSIX_C_SOURCE 200809L
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <vector.h>
+#include <unistd.h>
 
+#include "action.h"
 #include "cal.h"
 #include "entry.h"
 #include "getline.h"
+
 
 #define READ_BUF_SIZE 512
 
@@ -136,7 +140,7 @@ int load_cal_file (struct cal *cal, const char *filepath)
             /* TODO: validate entry before adding */
             entry_open = 0;
             vector_add(cal->entries, (void *)entry);
-            
+
             continue;
 
         } else if (entry_open &&
@@ -157,10 +161,30 @@ int load_cal_file (struct cal *cal, const char *filepath)
 }
 
 
-int main(void)
+int main(int argc, char *argv[])
 {
     struct cal *cal = cal_init();
-    load_cal_file(cal, "../cal.dat");
+    char *cal_file = "../cal.dat";
+    enum Action action = ACTION_NOT_SET;
+    int opt;
+
+    while ((opt = getopt(argc, argv, "f:d")) != -1) {
+        switch (opt) {
+        case 'f':
+            cal_file = optarg;
+            break;
+
+        case 'd':
+            action = ACTION_DUMP;
+            break;
+
+        default:
+            fprintf(stderr, "Option '%s' is not recognized!\nQuitting...\n", optarg);
+            exit(1);
+        }
+    }
+
+    load_cal_file(cal, cal_file);
     cal_destroy(cal);
     return 0;
 }
