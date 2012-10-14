@@ -185,6 +185,16 @@ int main(int argc, char *argv[])
     }
 
     load_cal_file(cal, cal_file);
+
+    switch (action) {
+    case ACTION_DUMP:
+        cal_dump(cal);
+        break;
+
+    default:
+        fprintf(stderr, "No action set: Quitting...\n");
+    }
+
     cal_destroy(cal);
     return 0;
 }
