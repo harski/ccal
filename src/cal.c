@@ -1,4 +1,5 @@
 
+#include <stdio.h>
 #include <stdlib.h>
 #include "cal.h"
 #include "entry.h"
@@ -11,7 +12,7 @@ struct cal * cal_init ()
     if (cal==NULL)
         return NULL;
 
-    cal->entries = vector_create();
+    cal->entries = vector_init();
     
     if (cal->entries == NULL) {
         free(cal);
@@ -30,5 +31,19 @@ void cal_destroy (struct cal *cal)
 
     vector_destroy(cal->entries);
     free(cal);
+}
+
+
+void cal_dump (const struct cal *cal)
+{
+    struct vector *v = cal->entries;
+
+    if (v!=NULL) {
+        for(unsigned int i = 0; i<v->elements; ++i) {
+            entry_dump(vector_get(v, i));
+            printf("\n");
+        }
+    }
+
 }
 

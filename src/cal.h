@@ -11,5 +11,7 @@ struct cal {
 struct cal * cal_init ();
 void cal_destroy (struct cal *cal);
 
+void cal_dump (const struct cal *cal);
+
 #endif /* CAL_H */
 
