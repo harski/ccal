@@ -83,14 +83,16 @@ int entry_parse_properties (struct entry *entry, char *key, char *value)
     } else if (!strcmp("category", key)) {
         entry->category = malloc(sizeof(char)*(strlen(value)+1));
         strcpy(entry->category, value);
-    } else if (!strcmp("date-start", key)) {
+    } else if (!strcmp("start-date", key)) {
         entry->start->date = date_init_p(value);
-    } else if (!strcmp("date-end", key)) {
+    } else if (!strcmp("end-date", key)) {
         entry->end->date  = date_init_p(value);
-    } else if (!strcmp("time-start", key)) {
+    } else if (!strcmp("start-time", key)) {
         entry->start->time = time_init_p(value);
-    } else if (!strcmp("time-end", key)) {
+    } else if (!strcmp("end-time", key)) {
         entry->end->time = time_init_p(value);
+    } else {
+        fprintf(stderr, "Error parsing calfile: key '%s' isn't a property!\n", key);
     }
 
     return 1;
