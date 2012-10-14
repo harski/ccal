@@ -54,7 +54,7 @@ int str_to_key_value_pairs (const char *str, const char separator, char *key, si
     key[separator_index] = '\0';
 
     strncpy(value, str+separator_index+1, strlen(str+separator_index+1));
-    key[strlen(str+separator_index+1)+1] = '\0';
+    value[strlen(str+separator_index+1)] = '\0';
 
     return 1;
 }
