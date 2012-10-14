@@ -39,12 +39,20 @@ void entry_dump (struct entry *entry)
     datetime_to_string(entry->end, end);
 
     printf("%s\n", entry->header);
-    printf("%s\n", entry->description);
+
+    if (entry->description!=NULL)
+        printf("%s\n", entry->description);
 
     if (entry->category!=NULL)
         printf("Category: %s\n", entry->category);
 
-    printf("%s -> %s\n", start, end);
+    if (start[0]!='\0')
+        printf("%s", start);
+
+    if (end[0]!='\0')
+        printf(" -> %s\n", end);
+    else
+        printf("\n");
 }
 
 
