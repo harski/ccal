@@ -5,7 +5,7 @@ CFLAGS = -g -Werror -Wall -pedantic -std=c99
 LIBS = -L/usr/local/lib -lvector
 
 TARGET = hcal
-OBJS = datetime.o entry.o cal.o getline.o
+OBJS = datetime.o entry.o cal.o getline.o strutils.o
 
 all: $(TARGET)
 

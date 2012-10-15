@@ -10,32 +10,9 @@
 #include "cal.h"
 #include "entry.h"
 #include "getline.h"
-
+#include "strutils.h"
 
 #define READ_BUF_SIZE 512
-
-
-void strip (char *str, const size_t len)
-{
-    unsigned whitespace_in_start = 0;
-    unsigned whitespace_at_end = 0;
-
-    while (str[whitespace_in_start] == ' ' || str[whitespace_in_start] == '\n')
-        ++whitespace_in_start;
-
-    if (whitespace_in_start == len) {
-        str[0] = '\0';
-        return;
-    }
-
-    while (str[len-1-whitespace_at_end] == ' ' || str[len-1-whitespace_at_end] == '\n')
-        ++whitespace_at_end;
-
-    for (unsigned int i = 0; i+whitespace_in_start < len; ++i)
-        str[i] = str[i+whitespace_in_start];
-
-    str[len-whitespace_in_start-whitespace_at_end] = '\0';
-}
 
 
 /* TODO: check if copies can fit into arrays */
