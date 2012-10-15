@@ -147,8 +147,12 @@ int main(int argc, char *argv[])
     enum Action action = ACTION_NOT_SET;
     int opt;
 
-    while ((opt = getopt(argc, argv, "f:d")) != -1) {
+    while ((opt = getopt(argc, argv, "f:da")) != -1) {
         switch (opt) {
+        case 'a':
+            action = ACTION_ADD;
+            break;
+
         case 'f':
             cal_file = optarg;
             break;
@@ -168,6 +172,11 @@ int main(int argc, char *argv[])
     switch (action) {
     case ACTION_DUMP:
         cal_dump(cal);
+        break;
+
+    case ACTION_ADD:
+        entry_add_interactive(cal->entries);
+        cal_save(cal, cal_file);
         break;
 
     default:

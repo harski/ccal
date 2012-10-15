@@ -17,6 +17,7 @@ struct entry {
 struct entry *entry_init();
 void entry_destroy (struct entry *entry);
 
+bool entry_add_interactive (struct vector *entries);
 void entry_dump (struct entry *entry);
 bool entry_save (FILE *file, const struct entry *entry);
 
