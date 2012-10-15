@@ -34,6 +34,12 @@ void datetime_to_string (struct datetime *dt, char *str)
 }
 
 
+struct date * date_init ()
+{
+    return malloc(sizeof(struct date));
+}
+
+
 /* TODO: check that buf is numeric */
 struct date * date_init_p (const char *str)
 {
@@ -58,6 +64,12 @@ struct date * date_init_p (const char *str)
 void date_destroy (struct date * date)
 {
     free(date);
+}
+
+
+struct time *time_init ()
+{
+    return malloc(sizeof(struct time));
 }
 
 
