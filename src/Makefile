@@ -5,7 +5,7 @@ CFLAGS = -g -Werror -Wall -pedantic -std=c99
 LIBS = -L/usr/local/lib -lvector
 
 TARGET = hcal
-OBJS = entry.o cal.o getline.o strutils.o
+OBJS = cal.o entry.o getline.o settings.o strutils.o
 
 all: $(TARGET)
 

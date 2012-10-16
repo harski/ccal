@@ -10,6 +10,7 @@
 #include "cal.h"
 #include "entry.h"
 #include "getline.h"
+#include "settings.h"
 #include "strutils.h"
 
 #define READ_BUF_SIZE 512
@@ -141,8 +142,8 @@ int load_cal_file (struct cal *cal, const char *filepath)
 
 int main(int argc, char *argv[])
 {
+    struct settings *set = settings_init();
     struct cal *cal = cal_init();
-    char *cal_file = "../cal.dat";
     enum Action action = ACTION_NOT_SET;
     int opt;
 
@@ -153,7 +154,7 @@ int main(int argc, char *argv[])
             break;
 
         case 'f':
-            cal_file = optarg;
+            set->cal_file = optarg;
             break;
 
         case 'd':
@@ -166,7 +167,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    load_cal_file(cal, cal_file);
+    load_cal_file(cal, set->cal_file);
 
     switch (action) {
     case ACTION_DUMP:
@@ -175,13 +176,14 @@ int main(int argc, char *argv[])
 
     case ACTION_ADD:
         entry_add_interactive(cal->entries);
-        cal_save(cal, cal_file);
+        cal_save(cal, set->cal_file);
         break;
 
     default:
         fprintf(stderr, "No action set: Quitting...\n");
     }
 
+    settings_destroy(set);
     cal_destroy(cal);
     return 0;
 }
