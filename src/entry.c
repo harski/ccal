@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <unistd.h>
 #include "entry.h"
 
@@ -75,49 +74,37 @@ static int get_optional_input_num (char * str, size_t * size)
 }
 
 
-static void fill_time(struct datetime * dt, char *buffer, size_t * size)
+static void fill_time(struct tm * tm, char *buffer, size_t * size)
 {
     time_t t;
-    struct tm *tm;
     int retval;
     time(&t);
+    *tm = *localtime(&t);
 
-    tm = localtime(&t);
-
-    printf("\nYear (default %d): ", 1900+tm->tm_year);
+    printf("\nYear (default %d): ", 1900 + tm->tm_year);
     retval = get_optional_input_num(buffer, size);
     if (retval >0)
-        dt->date->year = atoi(buffer);
-    else
-        dt->date->year = 1900 + tm->tm_year;
+        tm->tm_year = atoi(buffer) - 1900;
 
-    printf("\nMonth (default %d): ", 1+tm->tm_mon);
+    printf("\nMonth (default %d): ", 1 + tm->tm_mon);
     retval = get_optional_input_num(buffer, size);
     if (retval >0)
-        dt->date->month = atoi(buffer);
-    else
-        dt->date->month = 1 + tm->tm_mon;
+        tm->tm_mon = atoi(buffer) - 1;
 
     printf("\nDay (default %d): ", tm->tm_mday);
     retval = get_optional_input_num(buffer, size);
     if (retval >0)
-        dt->date->day = atoi(buffer);
-    else
-        dt->date->day = tm->tm_mday;
+        tm->tm_mday = atoi(buffer);
 
     printf("\nHour (default %d): ", tm->tm_hour);
     retval = get_optional_input_num(buffer, size);
     if (retval >0)
-        dt->time->hour = atoi(buffer);
-    else
-        dt->time->hour = tm->tm_hour;
+        tm->tm_hour = atoi(buffer);
 
     printf("\nMinute (default %d): ", tm->tm_min);
     retval = get_optional_input_num(buffer, size);
     if (retval >0)
-        dt->time->minute = atoi(buffer);
-    else
-        dt->time->minute = tm->tm_min;
+        tm->tm_min = atoi(buffer);
 
 }
 
@@ -128,10 +115,6 @@ bool entry_add_interactive (struct vector *entries)
     size_t size = INPUT_BUFFER_SIZE;
     int read;
     struct entry *entry = entry_init();
-    entry->start->date = date_init();
-    entry->start->time = time_init();
-    entry->end->date = date_init();
-    entry->end->time = time_init();
 
     printf("Header:\n");
     read = get_mandatory_input_str(buffer, &size);
@@ -151,8 +134,8 @@ bool entry_add_interactive (struct vector *entries)
         strncpy(entry->description, buffer, read);
     }
 
-    fill_time(entry->start, buffer, &size);
-    fill_time(entry->end, buffer, &size);
+    fill_time(&(entry->start), buffer, &size);
+    fill_time(&(entry->end), buffer, &size);
 
     vector_add(entries, (void *) entry);
 
@@ -168,6 +151,7 @@ clean_and_exit:
 
 struct entry *entry_init()
 {
+    time_t t = time(NULL);
     struct entry *entry = malloc(sizeof(struct entry));
     if (entry==NULL)
         return NULL;
@@ -175,14 +159,15 @@ struct entry *entry_init()
     entry->header = NULL;
     entry->description = NULL;
     entry->category = NULL;
-    entry->start = datetime_init();
-    entry->end = datetime_init();
+
+    localtime_r(&t, &entry->start);
+    localtime_r(&t, &entry->end);
 
     return entry;
 }
 
 
-bool entry_save (FILE *file, const struct entry *entry)
+bool entry_save (FILE *file, struct entry *entry)
 {
     fprintf(file, "ENTRY-START\n");
     fprintf(file, "header=\"%s\"\n", entry->header);
@@ -190,29 +175,11 @@ bool entry_save (FILE *file, const struct entry *entry)
     if (entry->description!=NULL)
         fprintf(file, "description=\"%s\"\n", entry->description);
 
-    if (entry->start != NULL) {
-        if (entry->start->date != NULL) {
-            fprintf(file, "start-date=%d%d%d\n", entry->start->date->year,
-                    entry->start->date->month, entry->start->date->day);
-        }
+    if (entry->category!=NULL)
+        fprintf(file, "category=\"%s\"\n", entry->category);
 
-        if (entry->start->time != NULL) {
-            fprintf(file, "start-time=%d%d\n", entry->start->time->hour,
-                    entry->start->time->minute);
-        }
-    }
-
-    if (entry->end != NULL) {
-        if (entry->end->date != NULL) {
-            fprintf(file, "end-date=%d%d%d\n", entry->end->date->year,
-                    entry->end->date->month, entry->end->date->day);
-        }
-
-        if (entry->end->time != NULL) {
-            fprintf(file, "end-time=%d%d\n", entry->end->time->hour,
-                    entry->end->time->minute);
-        }
-    }
+    fprintf(file, "start=%d\n", (int)mktime(&entry->start));
+    fprintf(file, "end=%d\n", (int)mktime(&entry->end));
 
     fprintf(file, "ENTRY-END\n\n");
 
@@ -225,20 +192,20 @@ void entry_destroy (struct entry *entry)
     free(entry->header);
     free(entry->description);
     free(entry->category);
-    free(entry->start);
-    free(entry->end);
     free(entry);
 }
 
 
 void entry_dump (struct entry *entry)
 {
-    char start[20];
-    char end[20];
+    size_t size = 32;
+    char start[size];
+    char end[size];
 
-    datetime_to_string(entry->start, start);
-    datetime_to_string(entry->end, end);
+    strftime(start, size, "%F %H", &entry->start);
+    strftime(end, size, "%F %H", &entry->end);
 
+    printf ("%s -> %s\n", start, end);
     printf("%s\n", entry->header);
 
     if (entry->description!=NULL)
@@ -246,14 +213,6 @@ void entry_dump (struct entry *entry)
 
     if (entry->category!=NULL)
         printf("Category: %s\n", entry->category);
-
-    if (start[0]!='\0')
-        printf("%s", start);
-
-    if (end[0]!='\0')
-        printf(" -> %s\n", end);
-    else
-        printf("\n");
 }
 
 

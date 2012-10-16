@@ -2,15 +2,15 @@
 #define ENTRY_H
 
 #include <stdbool.h>
+#include <time.h>
 #include <vector.h>
-#include "datetime.h"
 
 struct entry {
     char *header;
     char *description;
     char *category;
-    struct datetime *start;
-    struct datetime *end;
+    struct tm start;
+    struct tm end;
 };
 
 
@@ -19,7 +19,7 @@ void entry_destroy (struct entry *entry);
 
 bool entry_add_interactive (struct vector *entries);
 void entry_dump (struct entry *entry);
-bool entry_save (FILE *file, const struct entry *entry);
+bool entry_save (FILE *file, struct entry *entry);
 
 #endif /* ENTRY_H */
 

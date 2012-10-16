@@ -48,6 +48,7 @@ static inline void removequotes (char *str)
     }
 }
 
+
 int entry_parse_properties (struct entry *entry, char *key, char *value)
 {
     /* check if content */
@@ -60,14 +61,12 @@ int entry_parse_properties (struct entry *entry, char *key, char *value)
     } else if (!strcmp("category", key)) {
         entry->category = malloc(sizeof(char)*(strlen(value)+1));
         strcpy(entry->category, value);
-    } else if (!strcmp("start-date", key)) {
-        entry->start->date = date_init_p(value);
-    } else if (!strcmp("end-date", key)) {
-        entry->end->date  = date_init_p(value);
-    } else if (!strcmp("start-time", key)) {
-        entry->start->time = time_init_p(value);
-    } else if (!strcmp("end-time", key)) {
-        entry->end->time = time_init_p(value);
+    } else if (!strcmp("start", key)) {
+        time_t t = (time_t) atoi(value);
+        entry->start = *localtime(&t);
+    } else if (!strcmp("end", key)) {
+        time_t t = (time_t) atoi(value);
+        entry->end = *localtime(&t);
     } else {
         fprintf(stderr, "Error parsing calfile: key '%s' isn't a property!\n", key);
     }
