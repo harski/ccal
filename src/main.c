@@ -1,5 +1,6 @@
 #include "config.h"
 
+#include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -118,6 +119,38 @@ int load_cal_file (struct cal *cal, const char *filepath)
 }
 
 
+int ui_show_main_view (struct settings *set)
+{
+    int row, col;
+    bool exit = false;
+    char dim_str[20];
+    char select;
+
+    initscr();
+
+    getmaxyx(stdscr, row, col);
+    snprintf(dim_str, 20, "%d x %d", row, col);
+
+    mvprintw(0, col-1-strlen(dim_str), "%s", dim_str);
+    refresh();
+
+    while (!exit) {
+        select = getch();
+        switch (select) {
+
+        case 'q':
+            exit = true;
+            break;
+        default:
+            break;
+        }
+    }
+
+    endwin();
+    return 1;
+}
+
+
 int main(int argc, char *argv[])
 {
     struct settings *set = settings_init();
@@ -158,6 +191,7 @@ int main(int argc, char *argv[])
         break;
 
     default:
+        ui_show_main_view(set);
         fprintf(stderr, "No action set: Quitting...\n");
     }
 
