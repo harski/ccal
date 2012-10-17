@@ -46,6 +46,32 @@ size_t remove_prefix_whitespace (char *str, size_t len)
 }
 
 
+/* TODO: check if copies can fit into arrays */
+int str_to_key_value_pairs (const char *str, const char separator, char *key,
+                            size_t keylen, char *value, size_t valuelen)
+{
+    int separator_index = -1;
+
+    for (int i=0; str[i] != '\0'; ++i)
+        if (str[i] == separator)
+            separator_index = i;
+
+    if (separator_index == -1)
+        return 0;
+
+    strncpy(key, str, separator_index);
+    key[separator_index] = '\0';
+
+    strncpy(value, str+separator_index+1, strlen(str+separator_index+1));
+    value[strlen(str+separator_index+1)] = '\0';
+
+    return 1;
+}
+
+
+
+
+
 size_t strip (char *str, size_t len)
 {
     len = remove_postfix_whitespace(str, len);
