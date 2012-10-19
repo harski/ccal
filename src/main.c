@@ -112,6 +112,9 @@ int main(int argc, char *argv[])
     struct cal *cal = cal_init();
     enum Action action = ACTION_NOT_SET;
     int opt;
+    char set_file[128];
+
+    settings_default_file(set_file);
 
     while ((opt = getopt(argc, argv, "f:da")) != -1) {
         switch (opt) {
@@ -133,6 +136,7 @@ int main(int argc, char *argv[])
         }
     }
 
+    settings_read_settings_file(set, set_file);
     load_cal_file(cal, set->cal_file);
 
     switch (action) {
