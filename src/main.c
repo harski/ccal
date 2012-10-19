@@ -159,6 +159,7 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
     bool exit = false;
     char dim_str[20];
     char select;
+    int cur_line;
 
     /* ncurses init stuff */
     initscr();
@@ -169,6 +170,14 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
     snprintf(dim_str, 20, "%d x %d", row, col);
 
     mvprintw(0, col-1-strlen(dim_str), "%s", dim_str);
+
+    cur_line = 2;
+    mvprintw(cur_line++, 1, "d: view all entries (dump)");
+
+    ++cur_line;
+    mvprintw(cur_line++, 1, "q: quit ccal");
+    move(0, 0);
+
     refresh();
 
     while (!exit) {
