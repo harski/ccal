@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <time.h>
 #include <vector.h>
+#include <stdio.h>
 
 struct entry {
     char *header;
