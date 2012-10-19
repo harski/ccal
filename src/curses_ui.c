@@ -1,8 +1,23 @@
+#include "config.h"
 #include "curses_ui.h"
 #include "entry.h"
 #include <ncurses.h>
 #include <stdbool.h>
 #include <string.h>
+
+
+void ui_init (struct settings *set)
+{
+    initscr();
+    cbreak();
+    noecho();
+
+    if (has_colors() && set->colors) {
+        start_color();
+        init_pair(1, COLOR_YELLOW, COLOR_BLUE);
+    }
+    debug_print("has_colors() = '%d'\n", has_colors());
+}
 
 
 int ui_show_dump (struct settings *set, struct cal *cal)
@@ -35,9 +50,23 @@ int ui_show_dump (struct settings *set, struct cal *cal)
     }
 
     delwin(d_win);
+
     return 1;
 }
 
+
+static void print_main_header (WINDOW * win, struct settings *set)
+{
+    if (set->colors)
+        attron(COLOR_PAIR(1));
+
+    mvwprintw(win, 0, 0, "q:Quit  d:Dump entries");
+
+    if (set->colors)
+        attroff(COLOR_PAIR(1));
+
+    wrefresh(win);
+}
 
 
 int ui_show_main_view (struct settings *set, struct cal *cal)
@@ -47,28 +76,30 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
     char dim_str[20];
     char select;
     int cur_line;
+    WINDOW * main_win;
 
-    /* ncurses init stuff */
-    initscr();
-    cbreak();
-    noecho();
+    ui_init(set);
+
+    print_main_header(stdscr, set);
+
+    main_win = newwin(LINES-1, COLS, 1, 0);
 
     getmaxyx(stdscr, row, col);
     snprintf(dim_str, 20, "%d x %d", row, col);
 
-    mvprintw(0, col-1-strlen(dim_str), "%s", dim_str);
+    mvwprintw(main_win, 0, col-1-strlen(dim_str), "%s", dim_str);
 
     cur_line = 2;
-    mvprintw(cur_line++, 1, "d: view all entries (dump)");
+    mvwprintw(main_win, cur_line++, 1, "d: view all entries (dump)");
 
     ++cur_line;
-    mvprintw(cur_line++, 1, "q: quit ccal");
-    move(0, 0);
+    mvwprintw(main_win, cur_line++, 1, "q: quit ccal");
+    wmove(main_win, 0, 0);
 
-    refresh();
+    wrefresh(main_win);
 
     while (!exit) {
-        select = getch();
+        select = wgetch(main_win);
         switch (select) {
         case 'd':
             ui_show_dump(set, cal);
@@ -79,10 +110,12 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
         default:
             break;
         }
-        refresh();
+        wrefresh(main_win);
     }
 
+    delwin(main_win);
     endwin();
+
     return 1;
 }
 
