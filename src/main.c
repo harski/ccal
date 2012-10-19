@@ -8,6 +8,7 @@
 
 #include "action.h"
 #include "cal.h"
+#include "curses_ui.h"
 #include "entry.h"
 #include "getline.h"
 #include "settings.h"
@@ -150,6 +151,7 @@ int main(int argc, char *argv[])
         break;
 
     default:
+        ui_show_main_view(set, cal);
         fprintf(stderr, "No action set: Quitting...\n");
     }
 
