@@ -23,6 +23,8 @@ int settings_load_defaults(struct settings *set)
     set->cal_file = malloc(strlen(filename)+1);
     strcpy(set->cal_file, filename);
 
+    set->colors = true;
+
     return 1;
 }
 
