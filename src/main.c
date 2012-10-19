@@ -131,10 +131,11 @@ int ui_show_dump (struct settings *set, struct cal *cal)
         mvwprintw(d_win, i+1, 3, "%s", tmp->header);
     }
 
+    wmove(d_win, 0, 0);
     wrefresh(d_win);
 
     while (!exit) {
-        select = getch();
+        select = wgetch(d_win);
         switch (select) {
 
         case 'q':
@@ -185,7 +186,6 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
         switch (select) {
         case 'd':
             ui_show_dump(set, cal);
-            refresh();
             break;
         case 'q':
             exit = true;
@@ -193,6 +193,7 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
         default:
             break;
         }
+        refresh();
     }
 
     endwin();
