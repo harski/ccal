@@ -46,6 +46,18 @@ size_t remove_prefix_whitespace (char *str, size_t len)
 }
 
 
+void removequotes (char *str)
+{
+    if (str[0] == '"') {
+        size_t len = strlen(str);
+        if (str[len-1] == '"') {
+            memmove(str, str+1, len-2);
+            str[len-2] = '\0';
+        }
+    }
+}
+
+
 /* TODO: check if copies can fit into arrays */
 int str_to_key_value_pairs (const char *str, const char separator, char *key,
                             size_t keylen, char *value, size_t valuelen)

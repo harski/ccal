@@ -16,18 +16,6 @@
 #define READ_BUF_SIZE 512
 
 
-static inline void removequotes (char *str)
-{
-    if (str[0] == '"') {
-        size_t len = strlen(str);
-        if (str[len-1] == '"') {
-            memmove(str, str+1, len-2);
-            str[len-2] = '\0';
-        }
-    }
-}
-
-
 int entry_parse_properties (struct entry *entry, char *key, char *value)
 {
     /* check if content */
