@@ -12,6 +12,7 @@ struct settings {
 struct settings *settings_init ();
 void settings_destroy(struct settings *set);
 int settings_load_defaults (struct settings *set);
+int settings_read_settings_file (struct settings *set, const char *filepath);
 
 #endif /* SETTINGS_H */
 
