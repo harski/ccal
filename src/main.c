@@ -119,14 +119,51 @@ int load_cal_file (struct cal *cal, const char *filepath)
 }
 
 
-int ui_show_main_view (struct settings *set)
+int ui_show_dump (struct settings *set, struct cal *cal)
+{
+    struct vector *entries = cal->entries;
+    WINDOW *d_win = newwin(LINES, COLS, 0, 0);
+    char select;
+    bool exit = false;
+
+    for (int i = 0; i<entries->elements; ++i) {
+        struct entry * tmp = vector_get(entries, i);
+        mvwprintw(d_win, i+1, 3, "%s", tmp->header);
+    }
+
+    wrefresh(d_win);
+
+    while (!exit) {
+        select = getch();
+        switch (select) {
+
+        case 'q':
+            exit = true;
+            break;
+
+        default:
+            break;
+        }
+        wrefresh(d_win);
+    }
+
+    delwin(d_win);
+    return 1;
+}
+
+
+
+int ui_show_main_view (struct settings *set, struct cal *cal)
 {
     int row, col;
     bool exit = false;
     char dim_str[20];
     char select;
 
+    /* ncurses init stuff */
     initscr();
+    cbreak();
+    noecho();
 
     getmaxyx(stdscr, row, col);
     snprintf(dim_str, 20, "%d x %d", row, col);
@@ -137,7 +174,10 @@ int ui_show_main_view (struct settings *set)
     while (!exit) {
         select = getch();
         switch (select) {
-
+        case 'd':
+            ui_show_dump(set, cal);
+            refresh();
+            break;
         case 'q':
             exit = true;
             break;
@@ -191,7 +231,7 @@ int main(int argc, char *argv[])
         break;
 
     default:
-        ui_show_main_view(set);
+        ui_show_main_view(set, cal);
         fprintf(stderr, "No action set: Quitting...\n");
     }
 
