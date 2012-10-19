@@ -29,6 +29,23 @@ struct settings * settings_init()
 }
 
 
+const char * settings_default_file(char * file)
+{
+    size_t len;
+    strcpy(file, getenv("HOME"));
+    len = strlen(file);
+
+    if (file[len-1] != '/') {
+        file[len] = '/';
+        file[len+1] = '\0';
+        ++len;
+    }
+
+    strcat(file, ".ccalrc");
+    return file;
+}
+
+
 void settings_destroy (struct settings *set)
 {
     free(set->cal_file);
