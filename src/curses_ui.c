@@ -57,9 +57,11 @@ int ui_show_dump (struct settings *set, struct cal *cal)
 
 static void print_main_header (WINDOW * win, struct settings *set)
 {
-    if (set->color)
+    if (set->color) {
         attron(COLOR_PAIR(1));
-
+        for (int i = 0; i<COLS; ++i)
+            mvwprintw(win, 0, i, " ");
+    }
     mvwprintw(win, 0, 0, "q:Quit  d:Dump entries");
 
     if (set->color)
