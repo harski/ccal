@@ -8,6 +8,29 @@
 #define READ_BUF_SIZE 512
 
 
+static char * get_default_cal_file()
+{
+    char * file;
+    size_t len, tmplen;
+    const char fn[] = ".ccal.dat";
+
+    len = strlen(getenv("HOME")) + strlen(fn) + 2;
+    file = malloc(len);
+    strcpy(file, getenv("HOME"));
+
+    tmplen = strlen(file);
+
+    if (file[tmplen-1] != '/') {
+        file[tmplen] = '/';
+        file[tmplen+1] = '\0';
+        ++len;
+    }
+
+    strcat(file, fn);
+    return file;
+}
+
+
 static void scan_val (struct settings *set, const char *key, const char *val)
 {
     if (!strcmp(key, "color")) {
@@ -55,10 +78,7 @@ void settings_destroy (struct settings *set)
 
 int settings_load_defaults(struct settings *set)
 {
-    char filename[] = "../cal.dat";
-    set->cal_file = malloc(strlen(filename)+1);
-    strcpy(set->cal_file, filename);
-
+    set->cal_file = get_default_cal_file();
     set->color = true;
 
     return 1;
