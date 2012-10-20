@@ -57,17 +57,30 @@ int ui_show_dump (struct settings *set, struct cal *cal)
 
 static void print_main_header (WINDOW * win, struct settings *set)
 {
+    bool m_all;
+    if (win==NULL) {
+        win = newwin(1, COLS, 0, 0);
+        if (win==NULL) {
+            fprintf(stderr, "Error in creating main header win\n");
+            return;
+        }
+        m_all = true;
+    }
+
     if (set->color) {
-        attron(COLOR_PAIR(1));
+        wattron(win, COLOR_PAIR(1));
         for (int i = 0; i<COLS; ++i)
             mvwprintw(win, 0, i, " ");
     }
     mvwprintw(win, 0, 0, "q:Quit  d:Dump entries");
 
     if (set->color)
-        attroff(COLOR_PAIR(1));
+        wattroff(win, COLOR_PAIR(1));
 
     wrefresh(win);
+
+    if (m_all)
+        delwin(win);
 }
 
 
@@ -79,10 +92,9 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
     char select;
     int cur_line;
     WINDOW * main_win;
-
     ui_init(set);
 
-    print_main_header(stdscr, set);
+    print_main_header(NULL, set);
 
     main_win = newwin(LINES-1, COLS, 1, 0);
 
