@@ -46,6 +46,12 @@ int entry_parse_properties (struct entry *entry, char *key, char *value)
 int load_cal_file (struct cal *cal, const char *filepath)
 {
     FILE *file = fopen(filepath, "r");
+
+    if (file==NULL) {
+        fprintf(stderr, "Calendar file '%s' not found\n", filepath);
+        return 0;
+    }
+
     size_t buffer_len = READ_BUF_SIZE;
     char *buffer = malloc(sizeof(char)*READ_BUF_SIZE);
     int retval;
@@ -137,6 +143,8 @@ int main(int argc, char *argv[])
         }
     }
 
+    /* TODO: fix this mess of reading settings from file and accepting them
+     * from cli: cli should take precedence! */
     settings_read_settings_file(set, set_file);
     load_cal_file(cal, set->cal_file);
 
