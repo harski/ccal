@@ -202,8 +202,8 @@ void entry_dump (struct entry *entry)
     char start[size];
     char end[size];
 
-    strftime(start, size, "%F %H", &entry->start);
-    strftime(end, size, "%F %H", &entry->end);
+    strftime(start, size, "%F %H:%M", &entry->start);
+    strftime(end, size, "%F %H:%M", &entry->end);
 
     printf ("%s -> %s\n", start, end);
     printf("%s\n", entry->header);
