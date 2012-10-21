@@ -81,27 +81,27 @@ static void fill_time(struct tm * tm, char *buffer, size_t * size)
     time(&t);
     *tm = *localtime(&t);
 
-    printf("\nYear (default %d): ", 1900 + tm->tm_year);
+    printf("Year (default %d): ", 1900 + tm->tm_year);
     retval = get_optional_input_num(buffer, size);
     if (retval >0)
         tm->tm_year = atoi(buffer) - 1900;
 
-    printf("\nMonth (default %d): ", 1 + tm->tm_mon);
+    printf("Month (default %d): ", 1 + tm->tm_mon);
     retval = get_optional_input_num(buffer, size);
     if (retval >0)
         tm->tm_mon = atoi(buffer) - 1;
 
-    printf("\nDay (default %d): ", tm->tm_mday);
+    printf("Day (default %d): ", tm->tm_mday);
     retval = get_optional_input_num(buffer, size);
     if (retval >0)
         tm->tm_mday = atoi(buffer);
 
-    printf("\nHour (default %d): ", tm->tm_hour);
+    printf("Hour (default %d): ", tm->tm_hour);
     retval = get_optional_input_num(buffer, size);
     if (retval >0)
         tm->tm_hour = atoi(buffer);
 
-    printf("\nMinute (default %d): ", tm->tm_min);
+    printf("Minute (default %d): ", tm->tm_min);
     retval = get_optional_input_num(buffer, size);
     if (retval >0)
         tm->tm_min = atoi(buffer);
@@ -125,7 +125,7 @@ bool entry_add_interactive (struct vector *entries)
         strncpy(entry->header, buffer, read);
     }
 
-    printf("\nDescription:\n");
+    printf("Description:\n");
     read = get_optional_input_str(buffer, &size);
     if (read == -1) {
         goto clean_and_exit;
