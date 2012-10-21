@@ -139,6 +139,11 @@ bool entry_add_interactive (struct vector *entries)
 
     vector_add(entries, (void *) entry);
 
+#ifdef DEBUG
+    printf("\nDone!\n");
+    entry_dump(entry);
+#endif
+
     free(buffer);
     return true;
 
