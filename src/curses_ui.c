@@ -6,6 +6,16 @@
 #include <string.h>
 
 
+static void print_main_header (WINDOW * win, const struct settings *set);
+static void update_top_bar (WINDOW * win, const struct settings *set,
+                            const char *str);
+
+static void print_main_header (WINDOW * win, const struct settings *set)
+{
+    update_top_bar (win, set, "q:Quit  d:Dump");
+}
+
+
 void ui_init (struct settings *set)
 {
     initscr();
@@ -131,5 +141,35 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
     endwin();
 
     return 1;
+}
+
+
+static void update_top_bar (WINDOW * win, const struct settings *set,
+                               const char *str)
+{
+    bool m_all;
+    if (win==NULL) {
+        win = newwin(1, COLS, 0, 0);
+        if (win==NULL) {
+            fprintf(stderr, "Error in creating main header win\n");
+            return;
+        }
+        m_all = true;
+    }
+
+    if (set->color) {
+        wattron(win, COLOR_PAIR(1));
+        for (int i = 0; i<COLS; ++i)
+            mvwprintw(win, 0, i, " ");
+    }
+    mvwprintw(win, 0, 0, str);
+
+    if (set->color)
+        wattroff(win, COLOR_PAIR(1));
+
+    wrefresh(win);
+
+    if (m_all)
+        delwin(win);
 }
 
