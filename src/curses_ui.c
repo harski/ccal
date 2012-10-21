@@ -3,12 +3,16 @@
 #include "entry.h"
 #include <ncurses.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 
 static void print_main_header (WINDOW * win, const struct settings *set);
 static void update_top_bar (WINDOW * win, const struct settings *set,
                             const char *str);
+static int ui_show_day_agenda (WINDOW *win, const struct settings *set,
+                               const struct cal *cal);
 
 static void print_main_header (WINDOW * win, const struct settings *set)
 {
@@ -27,6 +31,48 @@ void ui_init (struct settings *set)
         init_pair(1, COLOR_YELLOW, COLOR_BLUE);
     }
     debug_print("has_colors() = '%d'\n", has_colors());
+}
+
+
+static int ui_show_day_agenda (WINDOW *win, const struct settings *set,
+                               const struct cal *cal)
+{
+    time_t t_now = time(NULL);
+    struct tm *tm = localtime(&t_now);
+    char * time_str;
+    int winx, winy;
+    int entry_start_line = 3;
+    int header_start_col = 14;
+    struct vector *entries = cal->entries;
+    struct entry *entry;
+
+    getmaxyx(win, winy, winx);
+    werase(win);
+
+    update_top_bar(NULL, set, "q:Quit");
+
+    time_str = malloc(winy+1);
+    strftime(time_str, winy+1, "%A %x", tm);
+
+    mvwprintw(win, 2, 0, time_str);
+
+    if (entries->elements > 0) {
+        for(int i=0; i<entries->elements; ++i) {
+            entry = (struct entry *) vector_get(entries, i);
+            char date[13];
+            snprintf(date, 13, "%.2d:%.2d-%.2d:%.2d:", entry->start.tm_hour,
+                     entry->start.tm_min, entry->end.tm_hour, entry->end.tm_min);
+            mvwprintw (win, entry_start_line+i+1, 0, "%s", date);
+            mvwprintw (win, entry_start_line+i+1, header_start_col, "%s", entry->header);
+        }
+    } else {
+        mvwprintw(win, 4, 3, "Nothing to do today :)");
+    }
+
+    wrefresh(win);
+
+    free(time_str);
+    return 1;
 }
 
 
@@ -65,62 +111,19 @@ int ui_show_dump (struct settings *set, struct cal *cal)
 }
 
 
-static void print_main_header (WINDOW * win, struct settings *set)
-{
-    bool m_all;
-    if (win==NULL) {
-        win = newwin(1, COLS, 0, 0);
-        if (win==NULL) {
-            fprintf(stderr, "Error in creating main header win\n");
-            return;
-        }
-        m_all = true;
-    }
-
-    if (set->color) {
-        wattron(win, COLOR_PAIR(1));
-        for (int i = 0; i<COLS; ++i)
-            mvwprintw(win, 0, i, " ");
-    }
-    mvwprintw(win, 0, 0, "q:Quit  d:Dump entries");
-
-    if (set->color)
-        wattroff(win, COLOR_PAIR(1));
-
-    wrefresh(win);
-
-    if (m_all)
-        delwin(win);
-}
-
-
 int ui_show_main_view (struct settings *set, struct cal *cal)
 {
-    int row, col;
     bool exit = false;
-    char dim_str[20];
     char select;
-    int cur_line;
     WINDOW * main_win;
+
     ui_init(set);
 
     print_main_header(NULL, set);
 
     main_win = newwin(LINES-1, COLS, 1, 0);
 
-    getmaxyx(stdscr, row, col);
-    snprintf(dim_str, 20, "%d x %d", row, col);
-
-    mvwprintw(main_win, 0, col-1-strlen(dim_str), "%s", dim_str);
-
-    cur_line = 2;
-    mvwprintw(main_win, cur_line++, 1, "d: view all entries (dump)");
-
-    ++cur_line;
-    mvwprintw(main_win, cur_line++, 1, "q: quit ccal");
-    wmove(main_win, 0, 0);
-
-    wrefresh(main_win);
+    ui_show_day_agenda(main_win, set, cal);
 
     while (!exit) {
         select = wgetch(main_win);
