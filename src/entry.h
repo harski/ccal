@@ -1,3 +1,6 @@
+/* Copyright (C) 2012 Tuomo Hartikainen <hartitu@gmail.com>
+ * Licensed under GPLv3, see LICENSE for more information. */
+
 #ifndef ENTRY_H
 #define ENTRY_H
 
