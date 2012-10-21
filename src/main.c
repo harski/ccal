@@ -5,6 +5,7 @@
 #include <string.h>
 #include <vector.h>
 #include <unistd.h>
+#include <locale.h>
 
 #include "action.h"
 #include "cal.h"
@@ -120,6 +121,8 @@ int main(int argc, char *argv[])
     enum Action action = ACTION_NOT_SET;
     int opt;
     char set_file[128];
+
+    setlocale(LC_CTYPE, "");
 
     settings_default_file(set_file);
 
