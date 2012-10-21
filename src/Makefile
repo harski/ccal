@@ -2,7 +2,7 @@
 
 CC = gcc
 CFLAGS = -g -Werror -Wall -pedantic -std=c99
-LIBS = -L/usr/local/lib -lvector -lncurses
+LIBS = -L/usr/local/lib -lvector -lncursesw
 
 TARGET = hcal
 OBJS = cal.o curses_ui.o entry.o getline.o settings.o strutils.o
