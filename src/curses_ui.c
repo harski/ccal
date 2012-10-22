@@ -135,6 +135,9 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
 
     main_win = newwin(LINES-1, COLS, 1, 0);
 
+    if (set->color)
+        wbkgd(main_win, A_NORMAL|COLOR_PAIR(CP_CONTENT));
+
     ui_show_day_agenda(main_win, set, cal);
 
     while (!exit) {
