@@ -11,6 +11,11 @@
 #include <time.h>
 
 
+enum ColorPairs {
+    CP_HEADER = 1,
+    CP_CONTENT
+};
+
 static void print_main_header (WINDOW * win, const struct settings *set);
 static void update_top_bar (WINDOW * win, const struct settings *set,
                             const char *str);
@@ -23,17 +28,21 @@ static void print_main_header (WINDOW * win, const struct settings *set)
 }
 
 
+static void ui_init_color(const struct settings *set) {
+    start_color();
+    init_pair(CP_HEADER, COLOR_YELLOW, COLOR_BLUE);
+    init_pair(CP_CONTENT, COLOR_WHITE, COLOR_BLACK);
+}
+
+
 void ui_init (struct settings *set)
 {
     initscr();
     cbreak();
     noecho();
 
-    if (has_colors() && set->color) {
-        start_color();
-        init_pair(1, COLOR_YELLOW, COLOR_BLUE);
-    }
-    debug_print("has_colors() = '%d'\n", has_colors());
+    if (has_colors() && set->color)
+        ui_init_color(set);
 }
 
 
