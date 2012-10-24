@@ -19,6 +19,7 @@ enum ColorPairs {
 static void print_main_header (WINDOW * win, const struct settings *set);
 static void update_top_bar (WINDOW * win, const struct settings *set,
                             const char *str);
+static void ui_init_color(const struct settings *set);
 static int ui_show_day_agenda (WINDOW *win, const struct settings *set,
                                const struct cal *cal);
 
@@ -28,10 +29,14 @@ static void print_main_header (WINDOW * win, const struct settings *set)
 }
 
 
-static void ui_init_color(const struct settings *set) {
-    start_color();
-    init_pair(CP_HEADER, COLOR_YELLOW, COLOR_BLUE);
-    init_pair(CP_CONTENT, COLOR_WHITE, COLOR_BLACK);
+int ui_add_entry (WINDOW *win, const struct settings *set,
+                  struct cal *cal)
+{
+    update_top_bar(NULL, set, "q:Cancel  return:Select  s:Save");
+    werase(win);
+
+
+    return 1;
 }
 
 
@@ -43,6 +48,13 @@ void ui_init (struct settings *set)
 
     if (has_colors() && set->color)
         ui_init_color(set);
+}
+
+
+static void ui_init_color(const struct settings *set) {
+    start_color();
+    init_pair(CP_HEADER, COLOR_YELLOW, COLOR_BLUE);
+    init_pair(CP_CONTENT, COLOR_WHITE, COLOR_BLACK);
 }
 
 
