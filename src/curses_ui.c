@@ -45,6 +45,7 @@ void ui_init (struct settings *set)
     initscr();
     cbreak();
     noecho();
+    curs_set(0);
 
     if (has_colors() && set->color)
         ui_init_color(set);
