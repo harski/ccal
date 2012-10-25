@@ -13,7 +13,6 @@
 #define PROMPT_CHAR ':'
 
 
-/* TODO: echo inputted characters to screen */
 int ui_get_string (WINDOW *win, const int row, const int col,
                    const char *prompt, char **str, size_t *size)
 {
@@ -37,16 +36,20 @@ int ui_get_string (WINDOW *win, const int row, const int col,
     if (prompt!=NULL)
         wprintw(win, "%s%c ", prompt, PROMPT_CHAR);
 
-    do {
-        get_ret = wget_wch(win, &wic);
+    echo();
+    curs_set(1);
 
+    while (read) {
+        get_ret = wget_wch(win, &wic);
         if (get_ret==OK) {
             if (wic==WEOF) {
                 /* WTF just happened? */
                 fprintf(stderr, "You just gave me a WEOF?!");
                 return 0;
             } else {
-                if (wc==CTRL('d')) {
+                wc = (wchar_t) wic;
+
+                if (wc==CTRL('D')) {
                     read = false;
                     continue;
                 }
@@ -58,14 +61,13 @@ int ui_get_string (WINDOW *win, const int row, const int col,
                     tmp = realloc(tmp, *size);
                     if (tmp==NULL) {
                         fprintf(stderr, "Failed to allocate memory\n");
+                        noecho();
                         return 0;
                     }
                     str = &tmp;
                 }
 
-                wc = (wchar_t) wic;
                 written = wctomb(tmp+tmp_len, wc);
-
                 if (written == -1) {
                     fprintf(stderr, "Can't transform wide char to multibyte in %s:%d:%s\n",
                            __FILE__, __LINE__, __func__);
@@ -81,8 +83,12 @@ int ui_get_string (WINDOW *win, const int row, const int col,
             fprintf(stderr, "wget_wch error in %s:%d:%s\n",
                     __FILE__, __LINE__, __func__);
         }
-    } while (read);
+    }
 
+    noecho();
+    curs_set(0);
+    wmove(win, row, 0);
+    wclrtoeol(win);
     wrefresh(win);
 
     return 1;
