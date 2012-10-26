@@ -217,3 +217,8 @@ void entry_dump (struct entry *entry)
 }
 
 
+bool entry_validate (struct entry *entry)
+{
+    return true;
+}
+
