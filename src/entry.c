@@ -13,13 +13,6 @@
 #define INPUT_BUFFER_SIZE 128
 
 
-bool entry_add (struct vector *entries)
-{
-
-    return true;
-}
-
-
 static int get_mandatory_input_str (char * str, size_t * size)
 {
     ssize_t read;
