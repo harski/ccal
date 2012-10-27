@@ -49,7 +49,7 @@ int ui_get_string (WINDOW *win, const int row, const int col,
             } else {
                 wc = (wchar_t) wic;
 
-                if (wc==CTRL('D')) {
+                if (wc==CTRL('D') || wc=='\n') {
                     read = false;
                     continue;
                 }
