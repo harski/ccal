@@ -1,8 +1,11 @@
 /* Copyright (C) 2012 Tuomo Hartikainen <hartitu@gmail.com>
  * Licensed under GPLv3, see LICENSE for more information. */
 
+#define _XOPEN_SOURCE
+
 #include "config.h"
 #include "curses_ui.h"
+#include "enter.h"
 #include "entry.h"
 #include <ncurses.h>
 #include <stdbool.h>
@@ -23,6 +26,7 @@ static void ui_init_color(const struct settings *set);
 static int ui_show_day_agenda (WINDOW *win, const struct settings *set,
                                const struct cal *cal);
 
+
 static void print_main_header (WINDOW * win, const struct settings *set)
 {
     update_top_bar (win, set, "q:Quit  d:Dump");
@@ -32,11 +36,34 @@ static void print_main_header (WINDOW * win, const struct settings *set)
 int ui_add_entry (WINDOW *win, const struct settings *set,
                   struct cal *cal)
 {
+    struct entry * entry = entry_init();
+    size_t tmp_size = 128;
+    char *tmp = malloc(tmp_size);
+    int success = 1;
+    int line = 2;
+
     update_top_bar(NULL, set, "q:Cancel  return:Select  s:Save");
     werase(win);
 
+    ui_get_string(win, line++, 0, "Header", &tmp, &tmp_size);
+    entry->header = malloc(1+strlen(tmp));
+    strcpy(entry->header, tmp);
+    tmp[0] = '\0';
 
-    return 1;
+    ui_get_string(win, line++, 0, "start time (yymmdd hhmm)", &tmp, &tmp_size);
+    strptime(tmp, "%y%m%d %H%M", &entry->start);
+    tmp[0] = '\0';
+
+    ui_get_string(win, line++, 0, "end time (yymmdd hhmm)", &tmp, &tmp_size);
+    strptime(tmp, "%y%m%d %H%M", &entry->end);
+
+    if (entry_validate(entry)) {
+        vector_add(cal->entries, entry);
+        success = 0;
+    }
+    /* TODO: report error */
+
+    return success;
 }
 
 
@@ -161,6 +188,9 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
             break;
         case 'q':
             exit = true;
+            break;
+        case 'a':
+            ui_add_entry(main_win, set, cal);
             break;
         default:
             break;
