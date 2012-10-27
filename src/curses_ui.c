@@ -25,6 +25,36 @@ static void update_top_bar (WINDOW * win, const struct settings *set,
 static void ui_init_color(const struct settings *set);
 static int ui_show_day_agenda (WINDOW *win, const struct settings *set,
                                const struct cal *cal);
+static bool entry_is_today(const struct entry *entry, const struct tm *tm);
+static inline struct tm *get_today();
+static bool same_day (const struct tm *t1, const struct tm *t2);
+
+
+static bool entry_is_today(const struct entry *entry, const struct tm *tm)
+{
+    if (same_day(&(entry->start), tm) || same_day(&(entry->end), tm))
+        return true;
+
+    return false;
+}
+
+
+static inline struct tm *get_today()
+{
+    struct tm * tm =  malloc(sizeof(struct tm));
+    time_t tmp_time = time(NULL);
+    return localtime_r(&tmp_time, tm);
+}
+
+
+static bool same_day (const struct tm *t1, const struct tm *t2)
+{
+    if (t1->tm_year == t2->tm_year && t1->tm_mon == t2->tm_mon &&
+        t1->tm_mday == t2->tm_mday)
+        return true;
+
+    return false;
+}
 
 
 static void print_main_header (WINDOW * win, const struct settings *set)
