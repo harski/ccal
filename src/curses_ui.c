@@ -57,12 +57,6 @@ static bool same_day (const struct tm *t1, const struct tm *t2)
 }
 
 
-static void print_main_header (WINDOW * win, const struct settings *set)
-{
-    update_top_bar (win, set, "q:Quit  d:Dump");
-}
-
-
 int ui_add_entry (WINDOW *win, const struct settings *set,
                   struct cal *cal)
 {
@@ -193,41 +187,61 @@ int ui_show_dump (struct settings *set, struct cal *cal)
 }
 
 
+static void show_main_menu(WINDOW *win, struct settings *set, struct cal *cal)
+{
+    int line = 1;
+    update_top_bar(NULL, set, "q:Quit  s:Save cal  d:Dump all entries");
+
+    werase(win);
+    mvwprintw(win, line++, 0, "A: show dai agenda");
+    mvwprintw(win, line++, 0, "a: add a new entry");
+
+    wrefresh(win);
+}
+
+
 int ui_show_main_view (struct settings *set, struct cal *cal)
 {
     bool exit = false;
     char select;
     WINDOW * main_win;
+    struct tm *today = get_today();
 
     ui_init(set);
-
-    print_main_header(NULL, set);
 
     main_win = newwin(LINES-1, COLS, 1, 0);
 
     if (set->color)
         wbkgd(main_win, A_NORMAL|COLOR_PAIR(CP_CONTENT));
 
-    ui_show_day_agenda(main_win, set, cal);
-
     while (!exit) {
+        werase(main_win);
+        show_main_menu(main_win, set, cal);
+        wrefresh(main_win);
+
         select = wgetch(main_win);
         switch (select) {
+        case 'a':
+            ui_add_entry(main_win, set, cal);
+            break;
+        case 'A':
+            ui_agenda_menu(set, cal);
+            break;
         case 'd':
             ui_show_dump(set, cal);
             break;
         case 'q':
             exit = true;
             break;
-        case 'a':
-            ui_add_entry(main_win, set, cal);
+        case 's':
+            cal_save(cal, set->cal_file);
             break;
         default:
             break;
         }
-        wrefresh(main_win);
     }
 
+    free(today);
     delwin(main_win);
     endwin();
 
