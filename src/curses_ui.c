@@ -19,7 +19,6 @@ enum ColorPairs {
     CP_CONTENT
 };
 
-static void print_main_header (WINDOW * win, const struct settings *set);
 static void update_top_bar (WINDOW * win, const struct settings *set,
                             const char *str);
 static void ui_init_color(const struct settings *set);
