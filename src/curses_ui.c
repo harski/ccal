@@ -22,7 +22,7 @@ enum ColorPairs {
 static void update_top_bar (WINDOW * win, const struct settings *set,
                             const char *str);
 static void ui_init_color(const struct settings *set);
-static int ui_show_day_agenda (WINDOW *win, const struct settings *set,
+static int ui_show_day_agenda (WINDOW *win, const struct tm *day, const struct settings *set,
                                const struct cal *cal);
 static bool entry_is_today(const struct entry *entry, const struct tm *tm);
 static inline struct tm *get_today();
@@ -128,36 +128,86 @@ static void ui_init_color(const struct settings *set) {
 }
 
 
-static int ui_show_day_agenda (WINDOW *win, const struct settings *set,
+static inline void print_agenda_day_entry (WINDOW *win, const struct entry *entry, unsigned int index)
+{
+    char date[13];
+    int entry_start_line = 2;
+    const int header_start_col = 3;
+    snprintf(date, 13, "%.2d:%.2d-%.2d:%.2d:", entry->start.tm_hour,
+             entry->start.tm_min, entry->end.tm_hour, entry->end.tm_min);
+    mvwprintw (win, entry_start_line+index, 0, "%s", date);
+    mvwprintw (win, entry_start_line+index, strlen(date)+1, "%s", entry->header);
+
+}
+
+
+int ui_agenda_menu (struct settings *set, struct cal *cal)
+{
+    WINDOW *top;
+    WINDOW *win;
+    bool loop = true;
+    struct tm *day = get_today();
+    char select;
+
+    clear();
+
+    /* content window */
+    top = newwin(1, COLS, 0, 0);
+    win = newwin(LINES-3, COLS, 1, 0);
+
+    do {
+        update_top_bar(top, set, "q:Quit  a:Add item  j:Next day  k:Previous day");
+        werase(win);
+        ui_show_day_agenda(win, day, set, cal);
+        select = wgetch(win);
+
+        switch (select) {
+        case 'j':
+            next_day(day);
+            break;
+        case 'k':
+            prev_day(day);
+            break;
+        case 'q':
+            loop = false;
+            break;
+        default:
+            break;
+        }
+    } while (loop);
+
+    free(day);
+    delwin(top);
+    delwin(win);
+
+    return 1;
+}
+
+
+static int ui_show_day_agenda (WINDOW *win, const struct tm *day,  const struct settings *set,
                                const struct cal *cal)
 {
-    time_t t_now = time(NULL);
-    struct tm *tm = localtime(&t_now);
     char * time_str;
     int winx, winy;
-    int entry_start_line = 3;
     int header_start_col = 14;
     struct vector *entries = cal->entries;
     struct entry *entry;
+    int entries_day = 0;
 
     getmaxyx(win, winy, winx);
     werase(win);
 
-    update_top_bar(NULL, set, "q:Quit");
-
     time_str = malloc(winy+1);
-    strftime(time_str, winy+1, "%A %x", tm);
+    strftime(time_str, winy+1, "%A %x", day);
 
-    mvwprintw(win, 2, 0, time_str);
+    mvwprintw(win, 1, 0, time_str);
 
     if (entries->elements > 0) {
-        for(int i=0; i<entries->elements; ++i) {
+        for(int i=0; i < entries->elements && winx > i; ++i) {
             entry = (struct entry *) vector_get(entries, i);
-            char date[13];
-            snprintf(date, 13, "%.2d:%.2d-%.2d:%.2d:", entry->start.tm_hour,
-                     entry->start.tm_min, entry->end.tm_hour, entry->end.tm_min);
-            mvwprintw (win, entry_start_line+i+1, 0, "%s", date);
-            mvwprintw (win, entry_start_line+i+1, header_start_col, "%s", entry->header);
+            if (entry_is_today(entry, day)) {
+                print_agenda_day_entry(win, entry, entries_day++);
+            }
         }
     } else {
         mvwprintw(win, 4, 3, "Nothing to do today :)");
