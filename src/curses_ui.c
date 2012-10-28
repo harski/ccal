@@ -26,6 +26,8 @@ static int ui_show_day_agenda (WINDOW *win, const struct settings *set,
                                const struct cal *cal);
 static bool entry_is_today(const struct entry *entry, const struct tm *tm);
 static inline struct tm *get_today();
+static inline void next_day (struct tm *tm);
+static inline void prev_day (struct tm *tm);
 static bool same_day (const struct tm *t1, const struct tm *t2);
 
 
@@ -43,6 +45,23 @@ static inline struct tm *get_today()
     struct tm * tm =  malloc(sizeof(struct tm));
     time_t tmp_time = time(NULL);
     return localtime_r(&tmp_time, tm);
+}
+
+
+static inline void next_day (struct tm *tm)
+{
+    time_t now = mktime(tm);
+    now += 60*60*24;
+    localtime_r(&now, tm);
+}
+
+
+static inline void prev_day (struct tm *tm)
+{
+    time_t now = mktime(tm);
+    now -= 60*60*24;
+    localtime_r(&now, tm);
+
 }
 
 
