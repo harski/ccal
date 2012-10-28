@@ -166,7 +166,6 @@ int main(int argc, char *argv[])
 
     default:
         ui_show_main_view(set, cal);
-        fprintf(stderr, "No action set: Quitting...\n");
     }
 
     settings_destroy(set);
