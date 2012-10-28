@@ -154,14 +154,23 @@ static int ui_show_day_agenda (WINDOW *win, const struct settings *set,
 
 int ui_show_dump (struct settings *set, struct cal *cal)
 {
+    update_top_bar(NULL, set, "q:Quit");
     struct vector *entries = cal->entries;
-    WINDOW *d_win = newwin(LINES, COLS, 0, 0);
+    WINDOW *d_win = newwin(LINES-1, COLS, 1, 0);
     char select;
     bool exit = false;
 
     for (int i = 0; i<entries->elements; ++i) {
+        size_t size = 32;
+        char start[size];
+        char end[size];
         struct entry * tmp = vector_get(entries, i);
-        mvwprintw(d_win, i+1, 3, "%s", tmp->header);
+        int line = i+1;
+
+        strftime(start, size, "%F %H:%M", &tmp->start);
+        strftime(end, size, "%F %H:%M", &tmp->end);
+
+        mvwprintw(d_win, line, 0, "%s -> %s: %s", start, end, tmp->header);
     }
 
     wmove(d_win, 0, 0);
