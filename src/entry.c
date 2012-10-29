@@ -217,8 +217,11 @@ void entry_dump (struct entry *entry)
 }
 
 
-bool entry_validate (struct entry *entry)
+bool entry_validate (const struct *entry)
 {
+    if (entry->header==NULL) 
+        return false;
+
     return true;
 }
 
