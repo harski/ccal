@@ -132,7 +132,6 @@ static inline void print_agenda_day_entry (WINDOW *win, const struct entry *entr
 {
     char date[13];
     int entry_start_line = 2;
-    const int header_start_col = 3;
     snprintf(date, 13, "%.2d:%.2d-%.2d:%.2d:", entry->start.tm_hour,
              entry->start.tm_min, entry->end.tm_hour, entry->end.tm_min);
     mvwprintw (win, entry_start_line+index, 0, "%s", date);
@@ -189,7 +188,6 @@ static int ui_show_day_agenda (WINDOW *win, const struct tm *day,  const struct 
 {
     char * time_str;
     int winx, winy;
-    int header_start_col = 14;
     struct vector *entries = cal->entries;
     struct entry *entry;
     int entries_day = 0;
