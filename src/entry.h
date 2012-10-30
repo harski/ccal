@@ -24,7 +24,7 @@ void entry_destroy (struct entry *entry);
 bool entry_add_interactive (struct vector *entries);
 void entry_dump (struct entry *entry);
 bool entry_save (FILE *file, struct entry *entry);
-bool entry_validate (struct entry *entry);
+bool entry_validate (const struct entry *entry);
 
 #endif /* ENTRY_H */
 
