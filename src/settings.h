@@ -9,6 +9,7 @@
 struct settings {
     char *cal_file;
     bool color;
+    bool cal_changed;
 };
 
 

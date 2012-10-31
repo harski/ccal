@@ -83,6 +83,7 @@ int settings_load_defaults(struct settings *set)
 {
     set->cal_file = get_default_cal_file();
     set->color = true;
+    set->cal_changed = false;
 
     return 1;
 }

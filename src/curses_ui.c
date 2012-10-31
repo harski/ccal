@@ -28,6 +28,7 @@ static bool entry_is_today(const struct entry *entry, const struct tm *tm);
 static inline struct tm *get_today();
 static inline void next_day (struct tm *tm);
 static inline void prev_day (struct tm *tm);
+static bool prompt_for_save (const struct settings *set);
 static bool same_day (const struct tm *t1, const struct tm *t2);
 
 
@@ -62,6 +63,40 @@ static inline void prev_day (struct tm *tm)
     now -= 60*60*24;
     localtime_r(&now, tm);
 
+}
+
+
+bool prompt_for_save (const struct settings *set)
+{
+    int input;
+    bool input_ok = false;
+    bool ans;
+    WINDOW *win = newwin(1, COLS, LINES-1, 0);
+
+    if (set->color)
+        wbkgd(win, A_NORMAL|COLOR_PAIR(CP_CONTENT));
+
+    werase(win);
+
+    mvwprintw(win, 0, 0, "Save changes to cal? [Y/n]: ");
+    wrefresh(win);
+
+    do {
+        input = wgetch(win);
+        if (input < 128) {
+            if (input=='n') {
+                input_ok = true;
+                ans = false;
+            } else if (input=='y' || input=='Y') {
+                input_ok = true;
+                ans = true;
+            }
+        }
+    } while (!input_ok);
+
+    delwin(win);
+
+    return ans;
 }
 
 
@@ -101,9 +136,12 @@ int ui_add_entry (WINDOW *win, const struct settings *set,
 
     if (entry_validate(entry)) {
         vector_add(cal->entries, entry);
+        set->cal_changed = true;
+        success = 1;
+    } else {
+        /* TODO: report error */
         success = 0;
     }
-    /* TODO: report error */
 
     return success;
 }
@@ -309,6 +347,8 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
             ui_show_dump(set, cal);
             break;
         case 'q':
+            if (set->cal_changed && prompt_for_save(set))
+                cal_save(cal, set->cal_file);
             exit = true;
             break;
         case 's':
