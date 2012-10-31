@@ -239,7 +239,7 @@ static int ui_show_day_agenda (WINDOW *win, const struct tm *day,  const struct 
     werase(win);
 
     time_str = malloc(winy+1);
-    strftime(time_str, winy+1, "%A %x", day);
+    strftime(time_str, winy+1, "%A %Y-%m-%d", day);
 
     mvwprintw(win, 1, 0, time_str);
 
