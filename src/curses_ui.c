@@ -154,6 +154,9 @@ int ui_agenda_menu (struct settings *set, struct cal *cal)
     top = newwin(1, COLS, 0, 0);
     win = newwin(LINES-3, COLS, 1, 0);
 
+    if (set->color)
+        wbkgd(win, A_NORMAL|COLOR_PAIR(CP_CONTENT));
+
     do {
         update_top_bar(top, set, "q:Quit  a:Add item  j:Next day  k:Previous day");
         werase(win);
@@ -338,14 +341,14 @@ static void update_top_bar (WINDOW * win, const struct settings *set,
     }
 
     if (set->color) {
-        wattron(win, COLOR_PAIR(1));
+        wattron(win, COLOR_PAIR(CP_HEADER));
         for (int i = 0; i<COLS; ++i)
             mvwprintw(win, 0, i, " ");
     }
     mvwprintw(win, 0, 0, str);
 
     if (set->color)
-        wattroff(win, COLOR_PAIR(1));
+        wattroff(win, COLOR_PAIR(CP_HEADER));
 
     wrefresh(win);
 
