@@ -268,8 +268,8 @@ static void show_main_menu(WINDOW *win, struct settings *set, struct cal *cal)
     update_top_bar(NULL, set, "q:Quit  s:Save cal  d:Dump all entries");
 
     werase(win);
-    mvwprintw(win, line++, 0, "A: show dai agenda");
-    mvwprintw(win, line++, 0, "a: add a new entry");
+    mvwprintw(win, line++, 0, "a: show day agenda");
+    mvwprintw(win, line++, 0, "A: add a new entry");
 
     wrefresh(win);
 }
@@ -296,10 +296,10 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
 
         select = wgetch(main_win);
         switch (select) {
-        case 'a':
+        case 'A':
             ui_add_entry(main_win, set, cal);
             break;
-        case 'A':
+        case 'a':
             ui_agenda_menu(set, cal);
             break;
         case 'd':
