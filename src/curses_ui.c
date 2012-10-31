@@ -269,6 +269,9 @@ int ui_show_dump (struct settings *set, struct cal *cal)
     char select;
     bool exit = false;
 
+    if (set->color)
+        wbkgd(d_win, A_NORMAL|COLOR_PAIR(CP_CONTENT));
+
     for (int i = 0; i<entries->elements; ++i) {
         size_t size = 32;
         char start[size];
