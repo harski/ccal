@@ -21,6 +21,8 @@ enum ColorPairs {
 
 static void update_top_bar (WINDOW * win, const struct settings *set,
                             const char *str);
+static int ui_add_entry (WINDOW *win, struct settings *set,
+                  struct cal *cal);
 static void ui_init_color(const struct settings *set);
 static int ui_show_day_agenda (WINDOW *win, const struct tm *day, const struct settings *set,
                                const struct cal *cal);
@@ -110,7 +112,7 @@ static bool same_day (const struct tm *t1, const struct tm *t2)
 }
 
 
-int ui_add_entry (WINDOW *win, const struct settings *set,
+static int ui_add_entry (WINDOW *win, struct settings *set,
                   struct cal *cal)
 {
     struct entry * entry = entry_init();
