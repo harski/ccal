@@ -16,4 +16,4 @@ $(TARGET): main.c $(OBJS)
 	$(CC) $(CFLAGS) main.c $(LIBS) $(OBJS) -o $(TARGET)
 
 clean:
-	rm -rf $(OBJS) $(TARGET)
+	rm -rf $(OBJS) $(TARGET) config.h
