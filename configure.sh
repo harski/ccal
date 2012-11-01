@@ -7,8 +7,19 @@ srcdir="src"
 VERSION=$(cat "${srcdir}/VERSION")
 CONFIG_HEADER="${srcdir}/config.h"
 
+
 # To enable debug, set this to zero
 DEBUG=1
+
+BINFILE="hcal"
+CC="gcc"
+CFLAGS="-g -Wall -Werror -pedantic -std=c99"
+
+topdir="$PWD"
+
+if [ $DEBUG -eq 0 ] ; then
+    CFLAGS="$CFLAGS -g"
+fi
 
 HAS_NCURSESW=1
 
@@ -70,3 +81,45 @@ else
 fi
 
 write_config_h
+
+
+source ${srcdir}/Makefile.def
+
+phony_target_list="all"
+
+mf="Makefile"
+makefile="${srcdir}/${mf}"
+rm -f ${makefile}
+touch ${makefile}
+
+echo "CC=gcc" >> $makefile
+echo "CFLAGS=$CFLAGS" >> $makefile
+echo "" >> $makefile
+echo "all: $BINFILE" >> $makefile
+
+objlist=""
+for sfile in $SOURCE_FILES ; do
+    objlist="$objlist ${sfile/%.c/.o}"
+done
+
+echo "" >> $makefile
+echo "$BINFILE: $objlist" >> $makefile
+
+cd $srcdir
+for sfile in $SOURCE_FILES ; do
+    ${CC} -MM $sfile >> $mf
+    echo -e "\t\$(CC) -c \$(CFLAGS) $sfile -o ${sfile/%.c/.o}" >> $mf
+    echo "" >> $mf
+done
+
+echo "" >> $mf
+echo "" >> $mf
+
+echo "clean:" >> $mf
+echo -e "\t-rm -f $objlist" >> $mf
+echo -e "\t-rm -f $BINFILE" >> $mf
+echo -e "\t-rm -f $GENERATED_HEADERS" >> $mf
+echo "" >> $mf
+
+cd $topdir
+

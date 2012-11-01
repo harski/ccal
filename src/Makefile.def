@@ -1,0 +1,12 @@
+
+SOURCE_FILES="cal.c \
+        curses_ui.c \
+        enter.c \
+        entry.c \
+        getline.c \
+        main.c \
+        settings.c \
+        strutils.c"
+
+GENERATED_HEADERS="config.h"
+
