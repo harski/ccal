@@ -379,7 +379,7 @@ static void update_top_bar (WINDOW * win, const struct settings *set,
     if (win==NULL) {
         win = newwin(1, COLS, 0, 0);
         if (win==NULL) {
-            fprintf(stderr, "Error in creating main header win\n");
+            fprintf(stderr, "Error in creating window for 'update_top_bar'\n");
             return;
         }
         m_all = true;
