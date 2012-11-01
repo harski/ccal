@@ -3,7 +3,9 @@
 srcdir="src"
 VERSION=$(cat "${srcdir}/VERSION")
 CONFIG_HEADER="${srcdir}/config.h"
-DEBUG=0
+
+# To enable debug, set this to zero
+DEBUG=1
 
 HAS_NCURSESW=1
 
@@ -37,9 +39,14 @@ function write_config_h {
     atc ""
 
     atc "#define VERSION \"$VERSION\""
-    atc "#define DEBUG $DEBUG"
-    atc ""
 
+    if [ $DEBUG -eq 0 ] ; then
+        atc "#define DEBUG 1"
+    else
+        atc "#define DEBUG 0"
+    fi
+
+    atc ""
     atc ""
     atc "#endif /* CONFIG_H */"
     atc ""
@@ -51,6 +58,12 @@ if [ ! hasncursesw ] ; then
     exit 1
 else
     echo "Found ncursesw"
+fi
+
+if [ $DEBUG -eq 0 ] ; then
+    echo "Debug is enabled"
+else
+    echo "Debug is disabled"
 fi
 
 write_config_h
