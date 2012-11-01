@@ -12,5 +12,8 @@ $(SRCDIR)/$(BIN):
 install: $(SRCDIR)/$(BIN)
 	install -m 0755 $(SRCDIR)/$(BIN) $(PREFIX)/bin/$(BIN)
 
-.PHONY: all install
+clean:
+	$(MAKE) --directory=$(SRCDIR) clean
+
+.PHONY: all clean install
 
