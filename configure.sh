@@ -14,6 +14,7 @@ DEBUG=1
 BINFILE="hcal"
 CC="gcc"
 CFLAGS="-g -Wall -Werror -pedantic -std=c99"
+LIBS="-lncursesw -lvector"
 
 topdir="$PWD"
 
@@ -89,26 +90,36 @@ phony_target_list="all"
 
 mf="Makefile"
 makefile="${srcdir}/${mf}"
-rm -f ${makefile}
-touch ${makefile}
 
-echo "CC=gcc" >> $makefile
-echo "CFLAGS=$CFLAGS" >> $makefile
-echo "" >> $makefile
-echo "all: $BINFILE" >> $makefile
+cd $srcdir
+rm -f $mf
+touch $mf
+
+echo "CC=gcc" >> $mf
+echo "CFLAGS=$CFLAGS" >> $mf
+echo "" >> $mf
+echo "all: $BINFILE" >> $mf
 
 objlist=""
 for sfile in $SOURCE_FILES ; do
     objlist="$objlist ${sfile/%.c/.o}"
 done
 
-echo "" >> $makefile
-echo "$BINFILE: $objlist" >> $makefile
+echo "" >> $mf
+echo "$BINFILE: $objlist" >> $mf
+echo -e "\t\$(CC) $objlist $LIBS -o $BINFILE" >> $mf
+echo >> $mf
 
-cd $srcdir
 for sfile in $SOURCE_FILES ; do
     ${CC} -MM $sfile >> $mf
     echo -e "\t\$(CC) -c \$(CFLAGS) $sfile -o ${sfile/%.c/.o}" >> $mf
+    echo "" >> $mf
+done
+
+echo "" >> $mf
+
+for hfile in $GENERATED_HEADERS ; do
+    echo "$hfile:" >> $mf
     echo "" >> $mf
 done
 
@@ -119,6 +130,9 @@ echo "clean:" >> $mf
 echo -e "\t-rm -f $objlist" >> $mf
 echo -e "\t-rm -f $BINFILE" >> $mf
 echo -e "\t-rm -f $GENERATED_HEADERS" >> $mf
+echo "" >> $mf
+
+echo ".PHONY: all clean" >> $mf
 echo "" >> $mf
 
 cd $topdir
