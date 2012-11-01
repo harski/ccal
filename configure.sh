@@ -5,11 +5,22 @@ VERSION=$(cat "${srcdir}/VERSION")
 CONFIG_HEADER="${srcdir}/config.h"
 DEBUG=0
 
+HAS_NCURSESW=1
+
 function addtoconfig {
     echo "$1" >> $CONFIG_HEADER
 }
 
 alias atc='addtoconfig'
+
+function hasncursesw {
+    $(pkg-config --exists ncursesw)
+    if [ $? -eq 0 ] ; then
+        HAS_NCURSESW=0
+    else
+        return 1
+    fi
+}
 
 function write_config_h {
 # If $CONFIG_HEADER exists, empty it
@@ -33,5 +44,13 @@ function write_config_h {
     atc "#endif /* CONFIG_H */"
     atc ""
 }
+
+
+if [ ! hasncursesw ] ; then
+    echo "Can't find ncursesw, aborting...">&2
+    exit 1
+else
+    echo "Found ncursesw"
+fi
 
 write_config_h
