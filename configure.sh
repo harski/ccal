@@ -1,5 +1,8 @@
 #!/usr/bin/env sh
 
+# Copyright (C) 2012 Tuomo Hartikainen <hartitu@gmail.com>
+# Licensed under GPLv3, see LICENSE for more information.
+
 srcdir="src"
 VERSION=$(cat "${srcdir}/VERSION")
 CONFIG_HEADER="${srcdir}/config.h"
