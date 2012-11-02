@@ -41,6 +41,18 @@ function has_ncursesw {
     return HAS_NCURSESW
 }
 
+
+function have_program {
+    if [ -z "$1" ] ; then
+        echo "aoeu"
+        return 1
+    fi
+
+    which $1 > /dev/null 2>&1
+    return $?
+}
+
+
 function write_config_h {
     # If $CONFIG_HEADER exists, empty it
     if [ -f $CONFIG_HEADER ] ;then
@@ -132,6 +144,12 @@ function create_makefile {
 
     return 0
 }
+
+
+if ! $(have_program pkg-config) ; then
+    echo "Can't find pkg-config, aborting...">&2
+    exit 4
+fi
 
 if [ ! has_ncursesw ] ; then
     echo "Can't find ncursesw, aborting...">&2
