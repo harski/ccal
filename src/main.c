@@ -3,6 +3,7 @@
 
 #include "config.h"
 
+#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -135,7 +136,21 @@ int main(int argc, char *argv[])
 
     settings_default_file(set_file);
 
-    while ((opt = getopt(argc, argv, "f:daV")) != -1) {
+    while (true) {
+        int this_optind = optind ? optind : 1;
+        int option_index = 0;
+
+        static struct option long_options[] = {
+            {"add",     no_argument,    0,  'a'},
+            {"dump",    no_argument,    0,  'd'},
+            {"version", no_argument,    0,  'V'}
+        };
+
+        opt = getopt_long(argc, argv, "f:daV", long_options, &option_index);
+
+        if (opt==-1)
+            break;
+
         switch (opt) {
         case 'a':
             action = ACTION_ADD;
