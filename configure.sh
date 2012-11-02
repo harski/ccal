@@ -14,7 +14,7 @@ DEBUG=1
 BINFILE="hcal"
 CC="gcc"
 CFLAGS="-g -Wall -pedantic -std=c99"
-LIBS="-lncursesw -lvector"
+LIBS="-lvector"
 
 topdir="$PWD"
 
@@ -30,7 +30,7 @@ function add_to_config {
 
 alias atc='add_to_config'
 
-function has_ncursesw {
+function have_ncursesw {
     $(pkg-config --exists ncursesw)
     if [ $? -eq 0 ] ; then
         HAS_NCURSESW=0
@@ -38,7 +38,15 @@ function has_ncursesw {
         HAS_NCURSESW=1
     fi
 
-    return HAS_NCURSESW
+    return $HAS_NCURSESW
+}
+
+
+function get_ncurses_flags {
+    local inc=$(pkg-config --cflags ncursesw)
+    local lib=$(pkg-config --libs ncursesw)
+
+    LIBS="$LIBS $inc $lib"
 }
 
 
@@ -99,6 +107,7 @@ function create_makefile {
 
     echo "CC=gcc" >> $mf
     echo "CFLAGS=$CFLAGS" >> $mf
+    echo "LIBS=$LIBS" >> $mf
     echo "" >> $mf
     echo "all: $BINFILE" >> $mf
 
@@ -109,7 +118,7 @@ function create_makefile {
 
     echo "" >> $mf
     echo "$BINFILE: $objlist" >> $mf
-    echo -e "\t\$(CC) $objlist $LIBS -o $BINFILE" >> $mf
+    echo -e "\t\$(CC) $objlist \$(LIBS) -o $BINFILE" >> $mf
     echo >> $mf
 
     for sfile in $SOURCE_FILES ; do
@@ -151,11 +160,12 @@ if ! $(have_program pkg-config) ; then
     exit 4
 fi
 
-if [ ! has_ncursesw ] ; then
+if ! $(have_ncursesw) ; then
     echo "Can't find ncursesw, aborting...">&2
     exit 1
 else
     echo "Found ncursesw"
+    get_ncurses_flags
 fi
 
 if [ $DEBUG -eq 0 ] ; then

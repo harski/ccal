@@ -4,7 +4,7 @@
 #ifndef ENTER_H
 #define ENTER_H
 
-#include <ncursesw/ncurses.h>
+#include <ncurses.h>
 #include <stddef.h>
 
 int ui_get_string (WINDOW *win, const int row, const int col,
