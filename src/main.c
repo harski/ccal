@@ -117,6 +117,12 @@ int load_cal_file (struct cal *cal, const char *filepath)
 }
 
 
+void print_version()
+{
+    printf("%s %s\n", NAME, VERSION);
+}
+
+
 int main(int argc, char *argv[])
 {
     struct settings *set = settings_init();
@@ -129,7 +135,7 @@ int main(int argc, char *argv[])
 
     settings_default_file(set_file);
 
-    while ((opt = getopt(argc, argv, "f:da")) != -1) {
+    while ((opt = getopt(argc, argv, "f:daV")) != -1) {
         switch (opt) {
         case 'a':
             action = ACTION_ADD;
@@ -141,6 +147,10 @@ int main(int argc, char *argv[])
 
         case 'd':
             action = ACTION_DUMP;
+            break;
+
+        case 'V':
+            action = ACTION_PRINT_VERSION;
             break;
 
         default:
@@ -162,6 +172,10 @@ int main(int argc, char *argv[])
     case ACTION_ADD:
         entry_add_interactive(cal->entries);
         cal_save(cal, set->cal_file);
+        break;
+
+    case ACTION_PRINT_VERSION:
+        print_version();
         break;
 
     default:

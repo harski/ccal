@@ -7,7 +7,8 @@
 enum Action {
     ACTION_NOT_SET,
     ACTION_DUMP,
-    ACTION_ADD
+    ACTION_ADD,
+    ACTION_PRINT_VERSION
 };
 
 #endif /* ACTION_H */
