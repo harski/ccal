@@ -24,23 +24,25 @@ fi
 
 HAS_NCURSESW=1
 
-function addtoconfig {
+function add_to_config {
     echo "$1" >> $CONFIG_HEADER
 }
 
-alias atc='addtoconfig'
+alias atc='add_to_config'
 
-function hasncursesw {
+function has_ncursesw {
     $(pkg-config --exists ncursesw)
     if [ $? -eq 0 ] ; then
         HAS_NCURSESW=0
     else
-        return 1
+        HAS_NCURSESW=1
     fi
+
+    return HAS_NCURSESW
 }
 
 function write_config_h {
-# If $CONFIG_HEADER exists, empty it
+    # If $CONFIG_HEADER exists, empty it
     if [ -f $CONFIG_HEADER ] ;then
         rm $CONFIG_HEADER
         touch $CONFIG_HEADER
@@ -66,6 +68,8 @@ function write_config_h {
     atc ""
     atc "#endif /* CONFIG_H */"
     atc ""
+
+    return 0
 }
 
 
@@ -125,10 +129,11 @@ function create_makefile {
     echo "" >> $mf
 
     cd $topdir
+
     return 0
 }
 
-if [ ! hasncursesw ] ; then
+if [ ! has_ncursesw ] ; then
     echo "Can't find ncursesw, aborting...">&2
     exit 1
 else
@@ -141,5 +146,19 @@ else
     echo "Debug is disabled"
 fi
 
-write_config_h
-create_makefile
+echo -n "Creating $srcdir/config.h... "
+if $(write_config_h) ; then
+    echo "Ok"
+else
+    echo "Failed! Aborting..." >&2
+    exit 2
+fi
+
+echo -n "Creating $srcdir/Makefile... "
+if $(create_makefile) ; then
+    echo "Ok"
+else
+    echo "Failed! Aborting..." >&2
+    exit 3
+fi
+
