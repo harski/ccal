@@ -69,6 +69,65 @@ function write_config_h {
 }
 
 
+function create_makefile {
+    source ${srcdir}/Makefile.def
+
+    phony_target_list="all"
+
+    mf="Makefile"
+    makefile="${srcdir}/${mf}"
+
+    cd $srcdir
+    rm -f $mf
+    touch $mf
+
+    echo "CC=gcc" >> $mf
+    echo "CFLAGS=$CFLAGS" >> $mf
+    echo "" >> $mf
+    echo "all: $BINFILE" >> $mf
+
+    objlist=""
+    for sfile in $SOURCE_FILES ; do
+        objlist="$objlist ${sfile/%.c/.o}"
+    done
+
+    echo "" >> $mf
+    echo "$BINFILE: $objlist" >> $mf
+    echo -e "\t\$(CC) $objlist $LIBS -o $BINFILE" >> $mf
+    echo >> $mf
+
+    for sfile in $SOURCE_FILES ; do
+        ${CC} -MM $sfile >> $mf
+        echo -e "\t\$(CC) -c \$(CFLAGS) $sfile -o ${sfile/%.c/.o}" >> $mf
+        echo "" >> $mf
+    done
+
+    echo "" >> $mf
+
+    for hfile in $GENERATED_HEADERS ; do
+        echo "$hfile:" >> $mf
+        echo "" >> $mf
+    done
+
+    echo "" >> $mf
+    echo "" >> $mf
+
+    echo "clean:" >> $mf
+    echo -e "\t-rm -f $objlist" >> $mf
+    echo -e "\t-rm -f $BINFILE" >> $mf
+    echo "" >> $mf
+
+    echo "distclean: clean" >> $mf
+    echo -e "\t-rm -f $GENERATED_HEADERS" >> $mf
+    echo "" >> $mf
+
+    echo ".PHONY: all clean distclean" >> $mf
+    echo "" >> $mf
+
+    cd $topdir
+    return 0
+}
+
 if [ ! hasncursesw ] ; then
     echo "Can't find ncursesw, aborting...">&2
     exit 1
@@ -83,61 +142,4 @@ else
 fi
 
 write_config_h
-
-
-source ${srcdir}/Makefile.def
-
-phony_target_list="all"
-
-mf="Makefile"
-makefile="${srcdir}/${mf}"
-
-cd $srcdir
-rm -f $mf
-touch $mf
-
-echo "CC=gcc" >> $mf
-echo "CFLAGS=$CFLAGS" >> $mf
-echo "" >> $mf
-echo "all: $BINFILE" >> $mf
-
-objlist=""
-for sfile in $SOURCE_FILES ; do
-    objlist="$objlist ${sfile/%.c/.o}"
-done
-
-echo "" >> $mf
-echo "$BINFILE: $objlist" >> $mf
-echo -e "\t\$(CC) $objlist $LIBS -o $BINFILE" >> $mf
-echo >> $mf
-
-for sfile in $SOURCE_FILES ; do
-    ${CC} -MM $sfile >> $mf
-    echo -e "\t\$(CC) -c \$(CFLAGS) $sfile -o ${sfile/%.c/.o}" >> $mf
-    echo "" >> $mf
-done
-
-echo "" >> $mf
-
-for hfile in $GENERATED_HEADERS ; do
-    echo "$hfile:" >> $mf
-    echo "" >> $mf
-done
-
-echo "" >> $mf
-echo "" >> $mf
-
-echo "clean:" >> $mf
-echo -e "\t-rm -f $objlist" >> $mf
-echo -e "\t-rm -f $BINFILE" >> $mf
-echo "" >> $mf
-
-echo "distclean: clean" >> $mf
-echo -e "\t-rm -f $GENERATED_HEADERS" >> $mf
-echo "" >> $mf
-
-echo ".PHONY: all clean distclean" >> $mf
-echo "" >> $mf
-
-cd $topdir
-
+create_makefile
