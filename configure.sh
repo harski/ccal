@@ -13,7 +13,7 @@ DEBUG=1
 
 BINFILE="hcal"
 CC="gcc"
-CFLAGS="-g -Wall -Werror -pedantic -std=c99"
+CFLAGS="-g -Wall -pedantic -std=c99"
 LIBS="-lncursesw -lvector"
 
 topdir="$PWD"
