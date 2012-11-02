@@ -15,5 +15,9 @@ install: $(SRCDIR)/$(BIN)
 clean:
 	$(MAKE) --directory=$(SRCDIR) clean
 
-.PHONY: all clean install
+distclean: clean
+	$(MAKE) --directory=$(SRCDIR) distclean
+	rm $(SRCDIR)/Makefile
+
+.PHONY: all clean distclean install
 

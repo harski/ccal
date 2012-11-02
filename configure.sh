@@ -130,10 +130,13 @@ echo "" >> $mf
 echo "clean:" >> $mf
 echo -e "\t-rm -f $objlist" >> $mf
 echo -e "\t-rm -f $BINFILE" >> $mf
+echo "" >> $mf
+
+echo "distclean: clean" >> $mf
 echo -e "\t-rm -f $GENERATED_HEADERS" >> $mf
 echo "" >> $mf
 
-echo ".PHONY: all clean" >> $mf
+echo ".PHONY: all clean distclean" >> $mf
 echo "" >> $mf
 
 cd $topdir
