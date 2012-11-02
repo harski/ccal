@@ -53,6 +53,7 @@ function write_config_h {
     atc "#define _POSIX_C_SOURCE 200809L"
     atc ""
 
+    atc "#define NAME \"$BINFILE\""
     atc "#define VERSION \"$VERSION\""
 
     if [ $DEBUG -eq 0 ] ; then
