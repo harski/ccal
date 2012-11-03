@@ -15,6 +15,7 @@ BINFILE="hcal"
 CC="gcc"
 CFLAGS="-g -Wall -pedantic -std=c99"
 LIBS="-lvector"
+INCLUDES=""
 
 topdir="$PWD"
 
@@ -46,7 +47,8 @@ function get_ncurses_flags {
     local inc=$(pkg-config --cflags ncursesw)
     local lib=$(pkg-config --libs ncursesw)
 
-    LIBS="$LIBS $inc $lib"
+    INCLUDES="$INCLUDES $inc"
+    LIBS="$LIBS $lib"
 }
 
 
@@ -108,6 +110,7 @@ function create_makefile {
     echo "CC=gcc" >> $mf
     echo "CFLAGS=$CFLAGS" >> $mf
     echo "LIBS=$LIBS" >> $mf
+    echo "INCLUDES=$INCLUDES" >> $mf
     echo "" >> $mf
     echo "all: $BINFILE" >> $mf
 
@@ -123,7 +126,7 @@ function create_makefile {
 
     for sfile in $SOURCE_FILES ; do
         ${CC} -MM $sfile >> $mf
-        echo -e "\t\$(CC) -c \$(CFLAGS) $sfile -o ${sfile/%.c/.o}" >> $mf
+        echo -e "\t\$(CC) -c \$(CFLAGS) \$(INCLUDES) $sfile -o ${sfile/%.c/.o}" >> $mf
         echo "" >> $mf
     done
 
