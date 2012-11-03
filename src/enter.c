@@ -87,8 +87,6 @@ int ui_get_string (WINDOW *win, const int row, const int col,
 
     noecho();
     curs_set(0);
-    wmove(win, row, 0);
-    wclrtoeol(win);
     wrefresh(win);
 
     return 1;
