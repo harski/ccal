@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+bool is_whitespace (char c);
 size_t remove_postfix_whitespace (char *str, size_t len);
 size_t remove_prefix_whitespace (char *str, size_t len);
 void removequotes (char *str);

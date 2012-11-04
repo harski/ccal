@@ -7,7 +7,7 @@
 
 #define WS "\t\n "
 
-static inline bool is_whitespace (char c)
+bool is_whitespace (char c)
 {
     unsigned int i=0;
     while (WS[i++]!='\0')
