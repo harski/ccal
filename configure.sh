@@ -75,6 +75,7 @@ function write_config_h {
     atc ""
 
     atc "#define _POSIX_C_SOURCE 200809L"
+    atc "#define _XOPEN_SOURCE"
     atc ""
 
     atc "#define NAME \"$BINFILE\""
