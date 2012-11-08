@@ -120,6 +120,9 @@ static int ui_add_entry (WINDOW *win, struct settings *set,
     char *tmp = malloc(tmp_size);
     int success = 1;
     int line = 2;
+    bool date_ok;
+    struct tm *tss = malloc(sizeof(struct tm));;
+    struct tm *tse = malloc(sizeof(struct tm));;
 
     update_top_bar(NULL, set, "q:Cancel  return:Select  s:Save");
     werase(win);
@@ -129,12 +132,25 @@ static int ui_add_entry (WINDOW *win, struct settings *set,
     strcpy(entry->header, tmp);
     tmp[0] = '\0';
 
-    ui_get_string(win, line++, 0, "start time (yymmdd hhmm)", &tmp, &tmp_size);
-    strptime(tmp, "%y%m%d %H%M", &entry->start);
-    tmp[0] = '\0';
+    date_ok = false;
+    while (!date_ok) {
+        int date_ret = ui_get_date(win, line++, 0, "start time", tss);
+        if (date_ret) {
+            entry->start = *tss;
+            date_ok = true;
+        }
+        /* TODO: else: abort */
+    }
 
-    ui_get_string(win, line++, 0, "end time (yymmdd hhmm)", &tmp, &tmp_size);
-    strptime(tmp, "%y%m%d %H%M", &entry->end);
+    date_ok = false;
+    while (!date_ok) {
+        int date_ret = ui_get_date(win, line++, 0, "end time", tse);
+        if (date_ret) {
+            entry->end = *tse;
+            date_ok = true;
+        }
+        /* TODO: else: abort */
+    }
 
     if (entry_validate(entry)) {
         vector_add(cal->entries, entry);
@@ -144,6 +160,10 @@ static int ui_add_entry (WINDOW *win, struct settings *set,
         /* TODO: report error */
         success = 0;
     }
+
+    free(tmp);
+    free(tss);
+    free(tse);
 
     return success;
 }
