@@ -277,6 +277,7 @@ int ui_get_string (WINDOW *win, const int row, const int col,
 
     echo();
     curs_set(1);
+    keypad(win, TRUE);
 
     while (read) {
         get_ret = wget_wch(win, &wic);
@@ -290,6 +291,20 @@ int ui_get_string (WINDOW *win, const int row, const int col,
 
                 if (wc==CTRL('D') || wc=='\n') {
                     read = false;
+                    continue;
+                } else if (wc==127 || wc==KEY_DC || wc==KEY_BACKSPACE) {
+                    int x, y;
+                    getyx(win, y, x);
+                    wmove(win, y, --x);
+                    wdelch(win);
+                    wmove(win, y, --x);
+                    wdelch(win);
+                    wmove(win, y, --x);
+                    wdelch(win);
+
+                    /* TODO: Fix handling multi-byte characters:
+                     * more than one char may need to be deleted */
+                    tmp[--tmp_len] = '\0';
                     continue;
                 }
 
@@ -327,6 +342,7 @@ int ui_get_string (WINDOW *win, const int row, const int col,
 
     noecho();
     curs_set(0);
+    keypad(win, FALSE);
     wrefresh(win);
 
     return 1;
