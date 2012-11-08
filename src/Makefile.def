@@ -4,6 +4,7 @@ SOURCE_FILES="cal.c \
         enter.c \
         entry.c \
         getline.c \
+        log.c \
         main.c \
         settings.c \
         strutils.c"
