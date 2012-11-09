@@ -7,7 +7,7 @@
 
 void wlog (const char *path, const char *fmt, ...)
 {
-    char *logfile;
+    const char *logfile;
     va_list ap;
     FILE *file;
 
