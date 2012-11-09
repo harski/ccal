@@ -130,7 +130,7 @@ function create_makefile {
 
     echo "distclean: clean" >> $mf
 	echo -e "\t\$(MAKE) --directory=\$(SRCDIR) distclean" >> $mf
-	echo -e "\trm \$(SRCDIR)/Makefile" >> $mf
+	echo -e "\trm -f Makefile" >> $mf
     echo "" >> $mf
 
     echo ".PHONY: all clean distclean install uninstall" >> $mf
@@ -191,6 +191,7 @@ function create_src_makefile {
 
     echo "distclean: clean" >> $mf
     echo -e "\t-rm -f $GENERATED_HEADERS" >> $mf
+    echo -e "\t-rm -f Makefile" >> $mf
     echo "" >> $mf
 
     echo ".PHONY: all clean distclean" >> $mf
