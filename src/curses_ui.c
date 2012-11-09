@@ -395,7 +395,7 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
 static void update_top_bar (WINDOW * win, const struct settings *set,
                                const char *str)
 {
-    bool m_all;
+    bool m_all = false;
     if (win==NULL) {
         win = newwin(1, COLS, 0, 0);
         if (win==NULL) {
