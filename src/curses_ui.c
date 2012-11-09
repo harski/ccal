@@ -372,12 +372,15 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
             ui_show_dump(set, cal);
             break;
         case 'q':
-            if (set->cal_changed && prompt_for_save(set))
+            if (set->cal_changed && prompt_for_save(set)) {
                 cal_save(cal, set->cal_file);
+                set->cal_changed = false;
+            }
             exit = true;
             break;
         case 's':
             cal_save(cal, set->cal_file);
+            set->cal_changed = false;
             break;
         default:
             break;
