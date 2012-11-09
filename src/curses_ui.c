@@ -264,7 +264,7 @@ static int ui_show_day_agenda (WINDOW *win, const struct tm *day,  const struct 
     mvwprintw(win, 1, 0, time_str);
 
     if (appts->elements > 0) {
-        for(int i=0; i < appts->elements && winx > i; ++i) {
+        for(unsigned int i=0; i < appts->elements && (unsigned)winx > i; ++i) {
             appt = (struct appt *) vector_get(appts, i);
             if (appt_is_today(appt, day)) {
                 print_agenda_day_appt(win, appt, appts_day++);
@@ -292,7 +292,7 @@ int ui_show_dump (struct settings *set, struct cal *cal)
     if (set->color)
         wbkgd(d_win, A_NORMAL|COLOR_PAIR(CP_CONTENT));
 
-    for (int i = 0; i<appts->elements; ++i) {
+    for (unsigned int i = 0; i<appts->elements; ++i) {
         size_t size = 32;
         char start[size];
         char end[size];

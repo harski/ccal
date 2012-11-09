@@ -24,7 +24,7 @@ static void tokenize (const char *str, struct vector *v)
     int token_len = 0;
     int token_start = 0;
 
-    for (int i=0; i <= strlen(str); ++i) {
+    for (int i=0; (size_t)i <= strlen(str); ++i) {
         bool iws = (is_whitespace(str[i]) || str[i]=='\0');
         if (iws && token_open) {
             /* token ends */
@@ -64,7 +64,7 @@ static bool _do_match (const struct vector *v, struct tm *tm)
     tnow = time(NULL);
     localtime_r(&tnow, &tmnow);
 
-    for (int i=0; i<v->elements; ++i) {
+    for (unsigned int i=0; i<v->elements; ++i) {
         const char *tmp = vector_get(v, i);
         struct tm tmtmp;
         int tmplen = strlen(tmp);
