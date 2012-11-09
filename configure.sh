@@ -13,7 +13,7 @@ DEBUG=0
 
 BINFILE="ccal"
 CC="gcc"
-CFLAGS="-g -Wall -pedantic -std=c99"
+CFLAGS="-g -Wall -Wextra -pedantic -std=c99"
 LIBS="-lvector"
 INCLUDES=""
 
