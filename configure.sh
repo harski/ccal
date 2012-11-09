@@ -221,19 +221,27 @@ else
     echo "Debug is disabled"
 fi
 
-echo -n "Creating $srcdir/config.h... "
+echo -n "Creating $srcdir/config.h..."
 if $(write_config_h) ; then
-    echo "Ok"
+    echo -e "\tOk"
 else
-    echo "Failed! Aborting..." >&2
+    echo -e "\tFailed! Aborting..." >&2
     exit 2
 fi
 
-echo -n "Creating $srcdir/Makefile... "
+echo -n "Creating Makefile... "
 if $(create_makefile) ; then
-    echo "Ok"
+    echo -e "\t\tOk"
 else
-    echo "Failed! Aborting..." >&2
+    echo -e "\tFailed! Aborting..." >&2
+    exit 3
+fi
+
+echo -n "Creating $srcdir/Makefile... "
+if $(create_src_makefile) ; then
+    echo -e "\tOk"
+else
+    echo -e "\tFailed! Aborting..." >&2
     exit 3
 fi
 
