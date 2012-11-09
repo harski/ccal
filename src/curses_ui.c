@@ -89,7 +89,7 @@ bool prompt_for_save (const struct settings *set)
             if (input=='n') {
                 input_ok = true;
                 ans = false;
-            } else if (input=='y' || input=='Y') {
+            } else if (input=='y' || input=='Y' || input=='\n') {
                 input_ok = true;
                 ans = true;
             }
