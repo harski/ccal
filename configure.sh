@@ -9,9 +9,9 @@ CONFIG_HEADER="${srcdir}/config.h"
 
 
 # To enable debug, set this to zero
-DEBUG=1
+DEBUG=0
 
-BINFILE="hcal"
+BINFILE="ccal"
 CC="gcc"
 CFLAGS="-g -Wall -pedantic -std=c99"
 LIBS="-lvector"
@@ -76,6 +76,7 @@ function write_config_h {
 
     atc "#define _POSIX_C_SOURCE 200809L"
     atc "#define _XOPEN_SOURCE"
+    atc "#define _GNU_SOURCE 1"
     atc ""
 
     atc "#define NAME \"$BINFILE\""

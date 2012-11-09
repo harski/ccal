@@ -1,6 +1,6 @@
 
 PREFIX = /usr/local
-BIN = hcal
+BIN = ccal
 SRCDIR = src
 MAKE = make
 
