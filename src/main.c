@@ -14,7 +14,7 @@
 #include "action.h"
 #include "cal.h"
 #include "curses_ui.h"
-#include "entry.h"
+#include "appt.h"
 #include "getline.h"
 #include "settings.h"
 #include "strutils.h"
@@ -22,24 +22,24 @@
 #define READ_BUF_SIZE 512
 
 
-int entry_parse_properties (struct entry *entry, char *key, char *value)
+int appt_parse_properties (struct appt *appt, char *key, char *value)
 {
     /* check if content */
     if(!strcmp("header", key)) {
-        entry->header = malloc(sizeof(char)*(strlen(value)+1));
-        strcpy(entry->header, value);
+        appt->header = malloc(sizeof(char)*(strlen(value)+1));
+        strcpy(appt->header, value);
     } else if (!strcmp("description", key)) {
-        entry->description = malloc(sizeof(char)*(strlen(value)+1));
-        strcpy(entry->description, value);
+        appt->description = malloc(sizeof(char)*(strlen(value)+1));
+        strcpy(appt->description, value);
     } else if (!strcmp("category", key)) {
-        entry->category = malloc(sizeof(char)*(strlen(value)+1));
-        strcpy(entry->category, value);
+        appt->category = malloc(sizeof(char)*(strlen(value)+1));
+        strcpy(appt->category, value);
     } else if (!strcmp("start", key)) {
         time_t t = (time_t) atoi(value);
-        entry->start = *localtime(&t);
+        appt->start = *localtime(&t);
     } else if (!strcmp("end", key)) {
         time_t t = (time_t) atoi(value);
-        entry->end = *localtime(&t);
+        appt->end = *localtime(&t);
     } else {
         fprintf(stderr, "Error parsing calfile: key '%s' isn't a property!\n", key);
     }
@@ -60,9 +60,9 @@ int load_cal_file (struct cal *cal, const char *filepath)
     size_t buffer_len = READ_BUF_SIZE;
     char *buffer = malloc(sizeof(char)*READ_BUF_SIZE);
     int retval;
-    int entry_open = 0;
+    int appt_open = 0;
     unsigned int line = 0;
-    struct entry *entry;
+    struct appt *appt;
 
     char key[READ_BUF_SIZE];
     char value[READ_BUF_SIZE];
@@ -76,37 +76,37 @@ int load_cal_file (struct cal *cal, const char *filepath)
 
         /* TODO: check if content */
         if(!strcmp("ENTRY-START", buffer)) {
-            if (entry_open) {
+            if (appt_open) {
                 fprintf(stderr, "Syntax error in '%s' near line %u:!\n\"%s\"\n", filepath, line, buffer);
                 /* TODO: cleanup, exit */
                 return 0;
             }
 
-            entry_open = 1;
-            entry = entry_init();
+            appt_open = 1;
+            appt = appt_init();
 
             continue;
 
         } else if (!strcmp("ENTRY-END", buffer)) {
-            if (!entry_open) {
+            if (!appt_open) {
                 fprintf(stderr, "Syntax error in '%s' near line %u:!\n\"%s\"\n", filepath, line, buffer);
                 /* TODO: cleanup, exit */
                 return 0;
             }
 
-            /* TODO: validate entry before adding */
-            entry_open = 0;
-            vector_add(cal->entries, (void *)entry);
+            /* TODO: validate appt before adding */
+            appt_open = 0;
+            vector_add(cal->appts, (void *)appt);
 
             continue;
 
-        } else if (entry_open &&
+        } else if (appt_open &&
                    -1 != str_to_key_value_pairs(buffer, '=', key, READ_BUF_SIZE, value, READ_BUF_SIZE)) {
             strip(key, strlen(key));
             strip(value, strlen(value));
             removequotes(value);
 
-            entry_parse_properties(entry, key, value);
+            appt_parse_properties(appt, key, value);
         }
 
     }
@@ -185,7 +185,7 @@ int main(int argc, char *argv[])
         break;
 
     case ACTION_ADD:
-        entry_add_interactive(cal->entries);
+        appt_add_interactive(cal->appts);
         cal_save(cal, set->cal_file);
         break;
 

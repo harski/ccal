@@ -6,7 +6,7 @@
 #include "config.h"
 #include "curses_ui.h"
 #include "enter.h"
-#include "entry.h"
+#include "appt.h"
 #include <ncurses.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -21,12 +21,12 @@ enum ColorPairs {
 
 static void update_top_bar (WINDOW * win, const struct settings *set,
                             const char *str);
-static int ui_add_entry (WINDOW *win, struct settings *set,
+static int ui_add_appt (WINDOW *win, struct settings *set,
                   struct cal *cal);
 static void ui_init_color(const struct settings *set);
 static int ui_show_day_agenda (WINDOW *win, const struct tm *day, const struct settings *set,
                                const struct cal *cal);
-static bool entry_is_today(const struct entry *entry, const struct tm *tm);
+static bool appt_is_today(const struct appt *appt, const struct tm *tm);
 static inline struct tm *get_today();
 static inline void next_day (struct tm *tm);
 static inline void prev_day (struct tm *tm);
@@ -34,9 +34,9 @@ static bool prompt_for_save (const struct settings *set);
 static bool same_day (const struct tm *t1, const struct tm *t2);
 
 
-static bool entry_is_today(const struct entry *entry, const struct tm *tm)
+static bool appt_is_today(const struct appt *appt, const struct tm *tm)
 {
-    if (same_day(&(entry->start), tm) || same_day(&(entry->end), tm))
+    if (same_day(&(appt->start), tm) || same_day(&(appt->end), tm))
         return true;
 
     return false;
@@ -112,10 +112,10 @@ static bool same_day (const struct tm *t1, const struct tm *t2)
 }
 
 
-static int ui_add_entry (WINDOW *win, struct settings *set,
+static int ui_add_appt (WINDOW *win, struct settings *set,
                   struct cal *cal)
 {
-    struct entry * entry = entry_init();
+    struct appt * appt = appt_init();
     size_t tmp_size = 128;
     char *tmp = malloc(tmp_size);
     int success = 1;
@@ -128,15 +128,15 @@ static int ui_add_entry (WINDOW *win, struct settings *set,
     werase(win);
 
     ui_get_string(win, line++, 0, "Header", &tmp, &tmp_size);
-    entry->header = malloc(1+strlen(tmp));
-    strcpy(entry->header, tmp);
+    appt->header = malloc(1+strlen(tmp));
+    strcpy(appt->header, tmp);
     tmp[0] = '\0';
 
     date_ok = false;
     while (!date_ok) {
         int date_ret = ui_get_date(win, line++, 0, "start time", tss);
         if (date_ret) {
-            entry->start = *tss;
+            appt->start = *tss;
             date_ok = true;
         }
         /* TODO: else: abort */
@@ -146,14 +146,14 @@ static int ui_add_entry (WINDOW *win, struct settings *set,
     while (!date_ok) {
         int date_ret = ui_get_date(win, line++, 0, "end time", tse);
         if (date_ret) {
-            entry->end = *tse;
+            appt->end = *tse;
             date_ok = true;
         }
         /* TODO: else: abort */
     }
 
-    if (entry_validate(entry)) {
-        vector_add(cal->entries, entry);
+    if (appt_validate(appt)) {
+        vector_add(cal->appts, appt);
         set->cal_changed = true;
         success = 1;
     } else {
@@ -188,14 +188,14 @@ static void ui_init_color(const struct settings *set) {
 }
 
 
-static inline void print_agenda_day_entry (WINDOW *win, const struct entry *entry, unsigned int index)
+static inline void print_agenda_day_appt (WINDOW *win, const struct appt *appt, unsigned int index)
 {
     char date[13];
-    int entry_start_line = 2;
-    snprintf(date, 13, "%.2d:%.2d-%.2d:%.2d:", entry->start.tm_hour,
-             entry->start.tm_min, entry->end.tm_hour, entry->end.tm_min);
-    mvwprintw (win, entry_start_line+index, 0, "%s", date);
-    mvwprintw (win, entry_start_line+index, strlen(date)+1, "%s", entry->header);
+    int appt_start_line = 2;
+    snprintf(date, 13, "%.2d:%.2d-%.2d:%.2d:", appt->start.tm_hour,
+             appt->start.tm_min, appt->end.tm_hour, appt->end.tm_min);
+    mvwprintw (win, appt_start_line+index, 0, "%s", date);
+    mvwprintw (win, appt_start_line+index, strlen(date)+1, "%s", appt->header);
 
 }
 
@@ -251,9 +251,9 @@ static int ui_show_day_agenda (WINDOW *win, const struct tm *day,  const struct 
 {
     char * time_str;
     int winx, winy;
-    struct vector *entries = cal->entries;
-    struct entry *entry;
-    int entries_day = 0;
+    struct vector *appts = cal->appts;
+    struct appt *appt;
+    int appts_day = 0;
 
     getmaxyx(win, winy, winx);
     werase(win);
@@ -263,11 +263,11 @@ static int ui_show_day_agenda (WINDOW *win, const struct tm *day,  const struct 
 
     mvwprintw(win, 1, 0, time_str);
 
-    if (entries->elements > 0) {
-        for(int i=0; i < entries->elements && winx > i; ++i) {
-            entry = (struct entry *) vector_get(entries, i);
-            if (entry_is_today(entry, day)) {
-                print_agenda_day_entry(win, entry, entries_day++);
+    if (appts->elements > 0) {
+        for(int i=0; i < appts->elements && winx > i; ++i) {
+            appt = (struct appt *) vector_get(appts, i);
+            if (appt_is_today(appt, day)) {
+                print_agenda_day_appt(win, appt, appts_day++);
             }
         }
     } else {
@@ -284,7 +284,7 @@ static int ui_show_day_agenda (WINDOW *win, const struct tm *day,  const struct 
 int ui_show_dump (struct settings *set, struct cal *cal)
 {
     update_top_bar(NULL, set, "q:Quit");
-    struct vector *entries = cal->entries;
+    struct vector *appts = cal->appts;
     WINDOW *d_win = newwin(LINES-1, COLS, 1, 0);
     char select;
     bool exit = false;
@@ -292,11 +292,11 @@ int ui_show_dump (struct settings *set, struct cal *cal)
     if (set->color)
         wbkgd(d_win, A_NORMAL|COLOR_PAIR(CP_CONTENT));
 
-    for (int i = 0; i<entries->elements; ++i) {
+    for (int i = 0; i<appts->elements; ++i) {
         size_t size = 32;
         char start[size];
         char end[size];
-        struct entry * tmp = vector_get(entries, i);
+        struct appt * tmp = vector_get(appts, i);
         int line = i+1;
 
         strftime(start, size, "%F %H:%M", &tmp->start);
@@ -331,11 +331,11 @@ int ui_show_dump (struct settings *set, struct cal *cal)
 static void show_main_menu(WINDOW *win, struct settings *set, struct cal *cal)
 {
     int line = 1;
-    update_top_bar(NULL, set, "q:Quit  s:Save cal  d:Dump all entries");
+    update_top_bar(NULL, set, "q:Quit  s:Save cal  d:Dump all appts");
 
     werase(win);
     mvwprintw(win, line++, 0, "a: show day agenda");
-    mvwprintw(win, line++, 0, "A: add a new entry");
+    mvwprintw(win, line++, 0, "A: add a new appt");
 
     wrefresh(win);
 }
@@ -363,7 +363,7 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
         select = wgetch(main_win);
         switch (select) {
         case 'A':
-            ui_add_entry(main_win, set, cal);
+            ui_add_appt(main_win, set, cal);
             break;
         case 'a':
             ui_agenda_menu(set, cal);

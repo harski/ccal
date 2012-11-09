@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "entry.h"
+#include "appt.h"
 
 
 #define INPUT_BUFFER_SIZE 128
@@ -105,20 +105,20 @@ static void fill_time(struct tm * tm, char *buffer, size_t * size)
 }
 
 
-bool entry_add_interactive (struct vector *entries)
+bool appt_add_interactive (struct vector *appts)
 {
     char * buffer = malloc(INPUT_BUFFER_SIZE);
     size_t size = INPUT_BUFFER_SIZE;
     int read;
-    struct entry *entry = entry_init();
+    struct appt *appt = appt_init();
 
     printf("Header:\n");
     read = get_mandatory_input_str(buffer, &size);
     if (read == -1) {
         goto clean_and_exit;
     } else {
-        entry->header = malloc(read);
-        strncpy(entry->header, buffer, read);
+        appt->header = malloc(read);
+        strncpy(appt->header, buffer, read);
     }
 
     printf("Description:\n");
@@ -126,18 +126,18 @@ bool entry_add_interactive (struct vector *entries)
     if (read == -1) {
         goto clean_and_exit;
     } else if (read != 0) {
-        entry->description = malloc(read);
-        strncpy(entry->description, buffer, read);
+        appt->description = malloc(read);
+        strncpy(appt->description, buffer, read);
     }
 
-    fill_time(&(entry->start), buffer, &size);
-    fill_time(&(entry->end), buffer, &size);
+    fill_time(&(appt->start), buffer, &size);
+    fill_time(&(appt->end), buffer, &size);
 
-    vector_add(entries, (void *) entry);
+    vector_add(appts, (void *) appt);
 
 #ifdef DEBUG
     printf("\nDone!\n");
-    entry_dump(entry);
+    appt_dump(appt);
 #endif
 
     free(buffer);
@@ -145,42 +145,42 @@ bool entry_add_interactive (struct vector *entries)
 
 clean_and_exit:
     free(buffer);
-    entry_destroy(entry);
+    appt_destroy(appt);
     return false;
 }
 
 
-struct entry *entry_init()
+struct appt *appt_init()
 {
     time_t t = time(NULL);
-    struct entry *entry = malloc(sizeof(struct entry));
-    if (entry==NULL)
+    struct appt *appt = malloc(sizeof(struct appt));
+    if (appt==NULL)
         return NULL;
 
-    entry->header = NULL;
-    entry->description = NULL;
-    entry->category = NULL;
+    appt->header = NULL;
+    appt->description = NULL;
+    appt->category = NULL;
 
-    localtime_r(&t, &entry->start);
-    localtime_r(&t, &entry->end);
+    localtime_r(&t, &appt->start);
+    localtime_r(&t, &appt->end);
 
-    return entry;
+    return appt;
 }
 
 
-bool entry_save (FILE *file, struct entry *entry)
+bool appt_save (FILE *file, struct appt *appt)
 {
     fprintf(file, "ENTRY-START\n");
-    fprintf(file, "header=\"%s\"\n", entry->header);
+    fprintf(file, "header=\"%s\"\n", appt->header);
 
-    if (entry->description!=NULL)
-        fprintf(file, "description=\"%s\"\n", entry->description);
+    if (appt->description!=NULL)
+        fprintf(file, "description=\"%s\"\n", appt->description);
 
-    if (entry->category!=NULL)
-        fprintf(file, "category=\"%s\"\n", entry->category);
+    if (appt->category!=NULL)
+        fprintf(file, "category=\"%s\"\n", appt->category);
 
-    fprintf(file, "start=%d\n", (int)mktime(&entry->start));
-    fprintf(file, "end=%d\n", (int)mktime(&entry->end));
+    fprintf(file, "start=%d\n", (int)mktime(&appt->start));
+    fprintf(file, "end=%d\n", (int)mktime(&appt->end));
 
     fprintf(file, "ENTRY-END\n\n");
 
@@ -188,38 +188,38 @@ bool entry_save (FILE *file, struct entry *entry)
 }
 
 
-void entry_destroy (struct entry *entry)
+void appt_destroy (struct appt *appt)
 {
-    free(entry->header);
-    free(entry->description);
-    free(entry->category);
-    free(entry);
+    free(appt->header);
+    free(appt->description);
+    free(appt->category);
+    free(appt);
 }
 
 
-void entry_dump (struct entry *entry)
+void appt_dump (struct appt *appt)
 {
     size_t size = 32;
     char start[size];
     char end[size];
 
-    strftime(start, size, "%F %H:%M", &entry->start);
-    strftime(end, size, "%F %H:%M", &entry->end);
+    strftime(start, size, "%F %H:%M", &appt->start);
+    strftime(end, size, "%F %H:%M", &appt->end);
 
     printf ("%s -> %s\n", start, end);
-    printf("%s\n", entry->header);
+    printf("%s\n", appt->header);
 
-    if (entry->description!=NULL)
-        printf("%s\n", entry->description);
+    if (appt->description!=NULL)
+        printf("%s\n", appt->description);
 
-    if (entry->category!=NULL)
-        printf("Category: %s\n", entry->category);
+    if (appt->category!=NULL)
+        printf("Category: %s\n", appt->category);
 }
 
 
-bool entry_validate (const struct entry *entry)
+bool appt_validate (const struct appt *appt)
 {
-    if (entry->header==NULL) 
+    if (appt->header==NULL) 
         return false;
 
     return true;

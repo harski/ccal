@@ -1,8 +1,8 @@
 
-SOURCE_FILES="cal.c \
+SOURCE_FILES="appt.c \
+        cal.c \
         curses_ui.c \
         enter.c \
-        entry.c \
         getline.c \
         log.c \
         main.c \

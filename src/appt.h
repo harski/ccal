@@ -9,7 +9,7 @@
 #include <vector.h>
 #include <stdio.h>
 
-struct entry {
+struct appt {
     char *header;
     char *description;
     char *category;
@@ -18,13 +18,13 @@ struct entry {
 };
 
 
-struct entry *entry_init();
-void entry_destroy (struct entry *entry);
+struct appt *appt_init();
+void appt_destroy (struct appt *appt);
 
-bool entry_add_interactive (struct vector *entries);
-void entry_dump (struct entry *entry);
-bool entry_save (FILE *file, struct entry *entry);
-bool entry_validate (const struct entry *entry);
+bool appt_add_interactive (struct vector *appts);
+void appt_dump (struct appt *appt);
+bool appt_save (FILE *file, struct appt *appt);
+bool appt_validate (const struct appt *appt);
 
 #endif /* ENTRY_H */
 

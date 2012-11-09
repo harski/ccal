@@ -9,7 +9,7 @@
 
 
 struct cal {
-    struct vector *entries;
+    struct vector *appts;
 };
 
 struct cal * cal_init ();
