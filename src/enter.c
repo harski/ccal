@@ -203,6 +203,20 @@ int ui_get_date (WINDOW *win, const int row, const int col,
                     if (date_ret)
                         read = false;
                     continue;
+                } else if (wc==127 || wc==KEY_DC || wc==KEY_BACKSPACE) {
+                    int x, y;
+                    getyx(win, y, x);
+                    wmove(win, y, --x);
+                    wdelch(win);
+                    wmove(win, y, --x);
+                    wdelch(win);
+                    wmove(win, y, --x);
+                    wdelch(win);
+
+                    /* TODO: Fix handling multi-byte characters:
+                     * more than one char may need to be deleted */
+                    tmp[--tmp_len] = '\0';
+                    continue;
                 }
 
                 /* normal character */
