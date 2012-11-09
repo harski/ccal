@@ -1,0 +1,31 @@
+Introduction
+============
+
+Ccal is a calendar program with a curses user interface for terminal
+emulators.  It uses readable plain text files for storing the entries.
+
+
+Compiling
+=========
+
+Ccal needs two libraries: nucrsesw and vector. If you don't have
+libvector, you can get it from https://github.com/harski/libvector. When
+the dependencies are met you can configure and compile ccal with:
+
+$ ./configure.sh
+$ make
+
+
+Installing
+==========
+
+Configure and compile ccal, and run
+
+$ make install
+
+
+Unistalling
+===========
+
+$ make uninstall
+
