@@ -18,7 +18,7 @@ int getline_custom (char **line, size_t *size, FILE *file)
 
    
     while (1) {
-        if (retval == *size) {
+        if ((size_t)retval == *size) {
             str = (char *) realloc((void*)str, (*size)*2);
 
             if (str == NULL) {
@@ -44,7 +44,7 @@ int getline_custom (char **line, size_t *size, FILE *file)
                 ++retval;
                 
                 /* check if need to realloc */
-                if (retval == *size) {
+                if ((size_t)retval == *size) {
                     str = (char *) realloc((void *)str, (*size)+1);
                     
                     if (str==NULL) {
