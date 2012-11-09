@@ -11,6 +11,7 @@ CONFIG_HEADER="${srcdir}/config.h"
 # To enable debug, set this to zero
 DEBUG=0
 
+PREFIX="/usr/local"
 BINFILE="ccal"
 CC="gcc"
 CFLAGS="-g -Wall -Wextra -pedantic -std=c99"
@@ -98,6 +99,47 @@ function write_config_h {
 
 
 function create_makefile {
+    local mf="Makefile"
+
+    rm -f $mf
+    touch $mf
+
+    echo "PREFIX=$PREFIX" >> $mf
+    echo "BIN=$BINFILE" >> $mf
+    echo "SRCDIR=src" >> $mf
+    echo "" >> $mf
+
+    echo "all: \$(SRCDIR)/\$(BIN)" >> $mf
+    echo "" >> $mf
+
+    echo "\$(SRCDIR)/\$(BIN):" >> $mf
+	echo -e "\t\$(MAKE) --directory=\$(SRCDIR)" >> $mf
+    echo "" >> $mf
+
+    echo "install: \$(SRCDIR)/\$(BIN)" >> $mf
+	echo -e "\tinstall -m 0755 \$(SRCDIR)/\$(BIN) \$(PREFIX)/bin/\$(BIN)" >> $mf
+    echo "" >> $mf
+
+    echo "uninstall:" >> $mf
+	echo -e "\trm \$(PREFIX)/bin/\$(BIN)" >> $mf
+    echo "" >> $mf
+
+    echo "clean:" >> $mf
+	echo -e "\t\$(MAKE) --directory=\$(SRCDIR) clean" >> $mf
+    echo "" >> $mf
+
+    echo "distclean: clean" >> $mf
+	echo -e "\t\$(MAKE) --directory=\$(SRCDIR) distclean" >> $mf
+	echo -e "\trm \$(SRCDIR)/Makefile" >> $mf
+    echo "" >> $mf
+
+    echo ".PHONY: all clean distclean install uninstall" >> $mf
+
+    return 0
+}
+
+
+function create_src_makefile {
     source ${srcdir}/Makefile.def
 
     phony_target_list="all"
