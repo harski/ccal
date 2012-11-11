@@ -1,8 +1,11 @@
 /* Copyright (C) 2012 Tuomo Hartikainen <hartitu@gmail.com>
  * Licensed under GPLv3, see LICENSE for more information. */
 
+#include "config.h"
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
+#include <wchar.h>
 #include "strutils.h"
 
 #define WS "\t\n "
@@ -84,7 +87,22 @@ int str_to_key_value_pairs (const char *str, const char separator, char *key,
 }
 
 
+size_t string_length (const char *str)
+{
+    size_t len;
+    wchar_t *wch;
 
+    if (!str || str[0]=='\0')
+        return 0;
+
+    len = strlen(str) + 1;
+    wch = malloc(len*sizeof(wchar_t));
+    len = mbstowcs(wch, str, len);
+    len = wcswidth(wch, len);
+    free(wch);
+
+    return len;
+}
 
 
 size_t strip (char *str, size_t len)
