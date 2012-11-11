@@ -285,7 +285,6 @@ int ui_get_string (WINDOW *win, const int row, const int col,
     wchar_t wc;
     size_t tmp_len = 0;
     int get_ret;
-    bool read = true;
     int written;
     int characters = 0;
 
@@ -301,67 +300,56 @@ int ui_get_string (WINDOW *win, const int row, const int col,
     if (prompt!=NULL)
         wprintw(win, "%s%c ", prompt, PROMPT_CHAR);
 
-    echo();
     curs_set(1);
 
-    while (read) {
+    while (true) {
         get_ret = wget_wchar(win, &wc);
 
         if (!get_ret) {
             if (wc==CTRL('D') || wc=='\n') {
-                read = false;
-                continue;
+                break;
             } else if (wc==127 || wc==KEY_DC || wc==KEY_BACKSPACE) {
                 if (characters==0)
                     continue;
 
                 --characters;
 
-                int x, y;
-                getyx(win, y, x);
-                wmove(win, y, --x);
-                wdelch(win);
-                wmove(win, y, --x);
-                wdelch(win);
-                wmove(win, y, --x);
-                wdelch(win);
-
                 /* TODO: Fix handling multi-byte characters:
                  * more than one char may need to be deleted */
                 tmp[--tmp_len] = '\0';
+            } else {
+                /* normal character */
+                ++characters;
 
-                continue;
-            }
-
-            /* normal character */
-            ++characters;
-
-            /* Ensure tmp has at least 5 bytes (utf-char + NUL) left! */
-            if (*size - tmp_len < MB_CUR_MAX) {
-                *size *= 2;
-                tmp = realloc(tmp, *size);
-                if (tmp==NULL) {
-                    fprintf(stderr, "Failed to allocate memory\n");
-                    noecho();
-                    return 0;
+                /* Ensure tmp has at least 5 bytes (utf-char + NUL) left! */
+                if (*size - tmp_len < MB_CUR_MAX) {
+                    *size *= 2;
+                    tmp = realloc(tmp, *size);
+                    if (tmp==NULL) {
+                        fprintf(stderr, "Failed to allocate memory\n");
+                        return 0;
+                    }
+                    str = &tmp;
                 }
-                str = &tmp;
-            }
 
-            written = wctomb(tmp+tmp_len, wc);
-            if (written == -1) {
-                fprintf(stderr, "Can't transform wide char to multibyte in %s:%d:%s\n",
-                       __FILE__, __LINE__, __func__);
-            }
+                written = wctomb(tmp+tmp_len, wc);
+                if (written == -1)
+                    wlog(NULL, "Can't transform wide char to multibyte in %s:%d:%s\n",
+                           __FILE__, __LINE__, __func__);
 
-            tmp_len += written;
-            tmp[tmp_len] = '\0';
+                tmp_len += written;
+                tmp[tmp_len] = '\0';
+            }
         } else {
             /* TODO: An error of sorts. Deal with it */
         }
+
+        /* Print the current situation to screen */
+        mvwprintw(win, row, col, "%s%c %s", prompt, PROMPT_CHAR, tmp);
+        wclrtoeol(win);
+        wrefresh(win);
     }
 
-    noecho();
     curs_set(0);
     wrefresh(win);
 
