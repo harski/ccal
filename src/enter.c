@@ -18,6 +18,30 @@
 #define PROMPT_CHAR ':'
 
 
+static int wget_wchar (WINDOW *win, wchar_t *c)
+{
+    int get_ret;
+    wint_t wic;
+
+    get_ret = wget_wch(win, &wic);
+    if (get_ret==OK && wic!=WEOF)
+        *c = (wchar_t) wic;
+
+    switch(get_ret) {
+    case OK:
+        get_ret = 0;
+        break;
+    case KEY_CODE_YES:
+        get_ret = 1;
+        break;
+    default:
+        get_ret = 2;
+    }
+
+    return get_ret;
+}
+
+
 static void tokenize (const char *str, struct vector *v)
 {
     bool token_open = false;
@@ -190,70 +214,58 @@ int ui_get_date (WINDOW *win, const int row, const int col,
     curs_set(1);
 
     while (read) {
-        get_ret = wget_wch(win, &wic);
-        if (get_ret==OK) {
-            if (wic==WEOF) {
-                /* WTF just happened? */
-                fprintf(stderr, "You just gave me a WEOF?!");
-                return 0;
-            } else {
-                wc = (wchar_t) wic;
+        get_ret = wget_wchar(win, &wc);
+        if (!get_ret) {
+            if (wc==CTRL('D') || wc=='\n') {
+                if (date_ret)
+                    read = false;
+                continue;
+            } else if (wc==127 || wc==KEY_DC || wc==KEY_BACKSPACE) {
+                int x, y;
+                getyx(win, y, x);
+                wmove(win, y, --x);
+                wdelch(win);
+                wmove(win, y, --x);
+                wdelch(win);
+                wmove(win, y, --x);
+                wdelch(win);
 
-                if (wc==CTRL('D') || wc=='\n') {
-                    if (date_ret)
-                        read = false;
-                    continue;
-                } else if (wc==127 || wc==KEY_DC || wc==KEY_BACKSPACE) {
-                    int x, y;
-                    getyx(win, y, x);
-                    wmove(win, y, --x);
-                    wdelch(win);
-                    wmove(win, y, --x);
-                    wdelch(win);
-                    wmove(win, y, --x);
-                    wdelch(win);
-
-                    /* TODO: Fix handling multi-byte characters:
-                     * more than one char may need to be deleted */
-                    tmp[--tmp_len] = '\0';
-                    continue;
-                }
-
-                /* normal character */
-                written = wctomb(tmp+tmp_len, wc);
-                if (written == -1) {
-                    fprintf(stderr, "Can't transform wide char to multibyte in %s:%d:%s\n",
-                           __FILE__, __LINE__, __func__);
-                }
-
-                tmp_len += written;
-                tmp[tmp_len] = '\0';
-
-                date_ret = match_date(tmp, tm);
-
-                int cury, curx;
-                getyx(win, cury, curx);
-
-                wclrtoeol(win);
-
-                mvwprintw(win, cury, curx+1, " => ");
-
-                if (date_ret) {
-                    mktime(tm);
-                    char time_str[128];
-                    wprintw(win, "%s", tmtostr(tm, time_str, 128));
-                } else {
-                    wprintw(win, "(Invalid: %d)", date_ret);
-                }
-                wmove(win, cury, curx);
-                wrefresh(win);
+                /* TODO: Fix handling multi-byte characters:
+                 * more than one char may need to be deleted */
+                tmp[--tmp_len] = '\0';
+                continue;
             }
+
+            /* normal character */
+            written = wctomb(tmp+tmp_len, wc);
+            if (written == -1) {
+                fprintf(stderr, "Can't transform wide char to multibyte in %s:%d:%s\n",
+                       __FILE__, __LINE__, __func__);
+            }
+
+            tmp_len += written;
+            tmp[tmp_len] = '\0';
+
+            date_ret = match_date(tmp, tm);
+
+            int cury, curx;
+            getyx(win, cury, curx);
+
+            wclrtoeol(win);
+
+            mvwprintw(win, cury, curx+1, " => ");
+
+            if (date_ret) {
+                mktime(tm);
+                char time_str[128];
+                wprintw(win, "%s", tmtostr(tm, time_str, 128));
+            } else {
+                wprintw(win, "(Invalid: %d)", date_ret);
+            }
+            wmove(win, cury, curx);
+            wrefresh(win);
         } else {
-            /* get_ret == ERR */
-            fprintf(stderr, "wget_wch error in %s:%d:%s\n",
-                    __FILE__, __LINE__, __func__);
-            return_val = 0;
-            break;
+            /* TODO: An error of sorts. Deal with it */
         }
     }
 
@@ -270,12 +282,12 @@ int ui_get_string (WINDOW *win, const int row, const int col,
                    const char *prompt, char **str, size_t *size)
 {
     char *tmp;
-    wint_t wic;
     wchar_t wc;
     size_t tmp_len = 0;
     int get_ret;
     bool read = true;
     int written;
+    int characters = 0;
 
     if (str==NULL) {
         *size = STR_INIT_SIZE;
@@ -291,72 +303,66 @@ int ui_get_string (WINDOW *win, const int row, const int col,
 
     echo();
     curs_set(1);
-    keypad(win, TRUE);
 
     while (read) {
-        get_ret = wget_wch(win, &wic);
-        if (get_ret==OK) {
-            if (wic==WEOF) {
-                /* WTF just happened? */
-                fprintf(stderr, "You just gave me a WEOF?!");
-                return 0;
-            } else {
-                wc = (wchar_t) wic;
+        get_ret = wget_wchar(win, &wc);
 
-                if (wc==CTRL('D') || wc=='\n') {
-                    read = false;
+        if (!get_ret) {
+            if (wc==CTRL('D') || wc=='\n') {
+                read = false;
+                continue;
+            } else if (wc==127 || wc==KEY_DC || wc==KEY_BACKSPACE) {
+                if (characters==0)
                     continue;
-                } else if (wc==127 || wc==KEY_DC || wc==KEY_BACKSPACE) {
-                    int x, y;
-                    getyx(win, y, x);
-                    wmove(win, y, --x);
-                    wdelch(win);
-                    wmove(win, y, --x);
-                    wdelch(win);
-                    wmove(win, y, --x);
-                    wdelch(win);
 
-                    /* TODO: Fix handling multi-byte characters:
-                     * more than one char may need to be deleted */
-                    tmp[--tmp_len] = '\0';
-                    continue;
-                }
+                --characters;
 
-                /* normal character */
+                int x, y;
+                getyx(win, y, x);
+                wmove(win, y, --x);
+                wdelch(win);
+                wmove(win, y, --x);
+                wdelch(win);
+                wmove(win, y, --x);
+                wdelch(win);
 
-                /* Ensure tmp has at least 5 bytes (utf-char + NUL) left! */
-                if (*size - tmp_len < MB_CUR_MAX) {
-                    *size *= 2;
-                    tmp = realloc(tmp, *size);
-                    if (tmp==NULL) {
-                        fprintf(stderr, "Failed to allocate memory\n");
-                        noecho();
-                        return 0;
-                    }
-                    str = &tmp;
-                }
+                /* TODO: Fix handling multi-byte characters:
+                 * more than one char may need to be deleted */
+                tmp[--tmp_len] = '\0';
 
-                written = wctomb(tmp+tmp_len, wc);
-                if (written == -1) {
-                    fprintf(stderr, "Can't transform wide char to multibyte in %s:%d:%s\n",
-                           __FILE__, __LINE__, __func__);
-                }
-
-                tmp_len += written;
-                tmp[tmp_len] = '\0';
+                continue;
             }
-        } else if (get_ret==KEY_CODE_YES) {
-            /* TODO: check for control characters! */
+
+            /* normal character */
+            ++characters;
+
+            /* Ensure tmp has at least 5 bytes (utf-char + NUL) left! */
+            if (*size - tmp_len < MB_CUR_MAX) {
+                *size *= 2;
+                tmp = realloc(tmp, *size);
+                if (tmp==NULL) {
+                    fprintf(stderr, "Failed to allocate memory\n");
+                    noecho();
+                    return 0;
+                }
+                str = &tmp;
+            }
+
+            written = wctomb(tmp+tmp_len, wc);
+            if (written == -1) {
+                fprintf(stderr, "Can't transform wide char to multibyte in %s:%d:%s\n",
+                       __FILE__, __LINE__, __func__);
+            }
+
+            tmp_len += written;
+            tmp[tmp_len] = '\0';
         } else {
-            /* get_ret == ERR */
-            fprintf(stderr, "wget_wch error in %s:%d:%s\n",
-                    __FILE__, __LINE__, __func__);
+            /* TODO: An error of sorts. Deal with it */
         }
     }
 
     noecho();
     curs_set(0);
-    keypad(win, FALSE);
     wrefresh(win);
 
     return 1;
