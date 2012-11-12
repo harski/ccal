@@ -195,13 +195,14 @@ int ui_get_date (WINDOW *win, const int row, const int col,
     size_t tmp_size = 128;
     int tmp_len = 0;
     char * tmp = malloc(tmp_size);
-    wint_t wic;
     wchar_t wc;
     int get_ret;
-    int written;
     bool read = true;
     int return_val = 1;
-    int date_ret = 10;
+    int date_ret = 0;
+    int characters = 0;
+    char time_str[128];
+    int prompt_len = strlen(prompt);
 
     tm->tm_hour = 0;
     tm->tm_min = 0;
@@ -210,7 +211,6 @@ int ui_get_date (WINDOW *win, const int row, const int col,
     if (prompt!=NULL)
         wprintw(win, "%s%c ", prompt, PROMPT_CHAR);
 
-    echo();
     curs_set(1);
 
     while (read) {
@@ -221,55 +221,46 @@ int ui_get_date (WINDOW *win, const int row, const int col,
                     read = false;
                 continue;
             } else if (wc==127 || wc==KEY_DC || wc==KEY_BACKSPACE) {
-                int x, y;
-                getyx(win, y, x);
-                wmove(win, y, --x);
-                wdelch(win);
-                wmove(win, y, --x);
-                wdelch(win);
-                wmove(win, y, --x);
-                wdelch(win);
+                if (characters==0)
+                    continue;
+
+                --characters;
 
                 /* TODO: Fix handling multi-byte characters:
                  * more than one char may need to be deleted */
                 tmp[--tmp_len] = '\0';
-                continue;
-            }
-
-            /* normal character */
-            written = wctomb(tmp+tmp_len, wc);
-            if (written == -1) {
-                fprintf(stderr, "Can't transform wide char to multibyte in %s:%d:%s\n",
-                       __FILE__, __LINE__, __func__);
-            }
-
-            tmp_len += written;
-            tmp[tmp_len] = '\0';
-
-            date_ret = match_date(tmp, tm);
-
-            int cury, curx;
-            getyx(win, cury, curx);
-
-            wclrtoeol(win);
-
-            mvwprintw(win, cury, curx+1, " => ");
-
-            if (date_ret) {
-                mktime(tm);
-                char time_str[128];
-                wprintw(win, "%s", tmtostr(tm, time_str, 128));
             } else {
-                wprintw(win, "(Invalid: %d)", date_ret);
+                /* normal character */
+                int written;
+
+                ++characters;
+                written = wctomb(tmp+tmp_len, wc);
+                if (written == -1) {
+                    fprintf(stderr, "Can't transform wide char to multibyte in %s:%d:%s\n",
+                           __FILE__, __LINE__, __func__);
+                }
+
+                tmp_len += written;
+                tmp[tmp_len] = '\0';
             }
-            wmove(win, cury, curx);
-            wrefresh(win);
         } else {
             /* TODO: An error of sorts. Deal with it */
         }
+
+        date_ret = match_date(tmp, tm);
+
+        if (date_ret) {
+            mktime(tm);
+            tmtostr(tm, time_str, 128);
+        } else {
+            strncpy(time_str, "(Invalid date)", 128);
+        }
+        mvwprintw(win, row, col, "%s%c %s  => %s", prompt, PROMPT_CHAR, tmp, time_str);
+        wclrtoeol(win);
+        wmove(win, row, prompt_len + 2 + string_length(tmp));
+        wrefresh(win);
     }
 
-    noecho();
     curs_set(0);
     wrefresh(win);
     free(tmp);
