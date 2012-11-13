@@ -22,32 +22,6 @@
 #define READ_BUF_SIZE 512
 
 
-int appt_parse_properties (struct appt *appt, char *key, char *value)
-{
-    /* check if content */
-    if(!strcmp("header", key)) {
-        appt->header = malloc(sizeof(char)*(strlen(value)+1));
-        strcpy(appt->header, value);
-    } else if (!strcmp("description", key)) {
-        appt->description = malloc(sizeof(char)*(strlen(value)+1));
-        strcpy(appt->description, value);
-    } else if (!strcmp("category", key)) {
-        appt->category = malloc(sizeof(char)*(strlen(value)+1));
-        strcpy(appt->category, value);
-    } else if (!strcmp("start", key)) {
-        time_t t = (time_t) atoi(value);
-        appt->start = *localtime(&t);
-    } else if (!strcmp("end", key)) {
-        time_t t = (time_t) atoi(value);
-        appt->end = *localtime(&t);
-    } else {
-        fprintf(stderr, "Error parsing calfile: key '%s' isn't a property!\n", key);
-    }
-
-    return 1;
-}
-
-
 int load_cal_file (struct cal *cal, const char *filepath)
 {
     FILE *file = fopen(filepath, "r");

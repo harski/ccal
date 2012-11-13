@@ -22,6 +22,7 @@ struct appt *appt_init();
 void appt_destroy (struct appt *appt);
 
 bool appt_add_interactive (struct vector *appts);
+int appt_parse_properties (struct appt *appt, char *key, char *value);
 void appt_dump (struct appt *appt);
 bool appt_save (FILE *file, struct appt *appt);
 bool appt_validate (const struct appt *appt);
