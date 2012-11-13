@@ -18,5 +18,7 @@ void cal_destroy (struct cal *cal);
 void cal_dump (const struct cal *cal);
 bool cal_save (const struct cal *cal, const char *filename);
 
+int load_cal_file (struct cal *cal, const char *filepath);
+
 #endif /* CAL_H */
 
