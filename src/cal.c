@@ -99,7 +99,7 @@ int load_cal_file (struct cal *cal, const char *filepath)
         strip(buffer, retval);
 
         /* TODO: check if content */
-        if(!strcmp("ENTRY-START", buffer)) {
+        if(!strcmp("APPT-START", buffer)) {
             if (appt_open) {
                 fprintf(stderr, "Syntax error in '%s' near line %u:!\n\"%s\"\n", filepath, line, buffer);
                 /* TODO: cleanup, exit */
@@ -111,7 +111,7 @@ int load_cal_file (struct cal *cal, const char *filepath)
 
             continue;
 
-        } else if (!strcmp("ENTRY-END", buffer)) {
+        } else if (!strcmp("APPT-END", buffer)) {
             if (!appt_open) {
                 fprintf(stderr, "Syntax error in '%s' near line %u:!\n\"%s\"\n", filepath, line, buffer);
                 /* TODO: cleanup, exit */

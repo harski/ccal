@@ -196,7 +196,7 @@ int appt_parse_properties (struct appt *appt, char *key, char *value)
 
 bool appt_save (FILE *file, struct appt *appt)
 {
-    fprintf(file, "ENTRY-START\n");
+    fprintf(file, "APPT-START\n");
     fprintf(file, "header=\"%s\"\n", appt->header);
 
     if (appt->description!=NULL)
@@ -208,7 +208,7 @@ bool appt_save (FILE *file, struct appt *appt)
     fprintf(file, "start=%d\n", (int)mktime(&appt->start));
     fprintf(file, "end=%d\n", (int)mktime(&appt->end));
 
-    fprintf(file, "ENTRY-END\n\n");
+    fprintf(file, "APPT-END\n\n");
 
     return true;
 }
