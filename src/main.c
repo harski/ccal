@@ -38,21 +38,16 @@ int main(int argc, char *argv[])
         int option_index = 0;
 
         static struct option long_options[] = {
-            {"add",     no_argument,    0,  'a'},
             {"dump",    no_argument,    0,  'd'},
             {"version", no_argument,    0,  'V'}
         };
 
-        opt = getopt_long(argc, argv, "f:daV", long_options, &option_index);
+        opt = getopt_long(argc, argv, "f:dV", long_options, &option_index);
 
         if (opt==-1)
             break;
 
         switch (opt) {
-        case 'a':
-            action = ACTION_ADD;
-            break;
-
         case 'f':
             set->cal_file = optarg;
             break;
@@ -79,11 +74,6 @@ int main(int argc, char *argv[])
     switch (action) {
     case ACTION_DUMP:
         cal_dump(cal);
-        break;
-
-    case ACTION_ADD:
-        appt_add_interactive(cal->appts);
-        cal_save(cal, set->cal_file);
         break;
 
     case ACTION_PRINT_VERSION:
