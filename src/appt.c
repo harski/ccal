@@ -108,7 +108,11 @@ void appt_dump (struct appt *appt)
 
 bool appt_validate (const struct appt *appt)
 {
-    if (appt->header==NULL) 
+    time_t start, end;
+    start = mktime(appt->start);
+    end = mktime(appt->end);
+
+    if (appt->header==NULL || end<start)
         return false;
 
     return true;
