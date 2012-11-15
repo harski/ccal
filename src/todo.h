@@ -31,6 +31,7 @@ struct todo {
 
 struct todo *todo_init();
 void todo_destroy (struct todo *todo);
+int todo_parse_properties (struct todo *todo, char *key, char *value);
 bool todo_save (FILE *file, struct todo *todo);
 bool todo_validate (struct todo *todo);
 

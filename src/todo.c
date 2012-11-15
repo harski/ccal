@@ -1,6 +1,8 @@
 /* Copyright (C) 2012 Tuomo Hartikainen <hartitu@gmail.com>
  * Licensed under GPLv3, see LICENSE for more information. */
 
+#include "config.h"
+#include "strutils.h"
 #include "todo.h"
 #include <stdlib.h>
 #include <string.h>
@@ -42,6 +44,52 @@ void todo_destroy (struct todo *todo)
 }
 
 
+/* TODO: time parsing with atoi is not checked. It should be checked.
+ * Check it. */
+int todo_parse_properties (struct todo *todo, char *key, char *value)
+{
+    int retval = 1;
+
+    /* check if content */
+    if(!strcmp("header", key)) {
+        todo->header = malloc(sizeof(char)*(strlen(value)+1));
+        strcpy(todo->header, value);
+    } else if (!strcmp("description", key)) {
+        todo->description = malloc(sizeof(char)*(strlen(value)+1));
+        strcpy(todo->description, value);
+    } else if (!strcmp("category", key)) {
+        todo->category = malloc(sizeof(char)*(strlen(value)+1));
+        strcpy(todo->category, value);
+    } else if (!strcmp("deadline", key)) {
+        time_t t = (time_t) atoi(value);
+        todo->deadline = malloc(sizeof(struct tm));
+        localtime_r(&t, todo->deadline);
+    } else if (!strcmp("scheduled", key)) {
+        /* TODO: continue here. The split of times can be done with the
+         * same function that already splits the keys and values */
+        char start[32];
+        char end[32];
+        str_to_key_value_pairs(value, ':', start, 32, end, 32);
+
+        if (start[0]=='\0' || end[0]=='\0') {
+            retval=0;
+        } else {
+            struct timeframe *tf = timeframe_init_alloc();
+            /* TODO: start and end is_numeric() */
+            time_t tmp = (time_t) atoi(start);
+            localtime_r(&tmp, tf->start);
+            tmp = (time_t) atoi(end);
+            localtime_r(&tmp, tf->end);
+        }
+    } else {
+        fprintf(stderr, "Error parsing calfile: key '%s' isn't a property!\n", key);
+        retval = 0;
+    }
+
+    return retval;
+}
+
+
 bool todo_save (FILE *file, struct todo *todo)
 {
     fprintf(file, "TODO-START\n");
@@ -56,8 +104,7 @@ bool todo_save (FILE *file, struct todo *todo)
     /* Save the scheduled timeframes */
     for (unsigned int i=0; i<todo->scheduled->elements; ++i) {
         struct timeframe *tf = (struct timeframe *) vector_get(todo->scheduled, i);
-        fprintf(file, "scheduled_start=\"%d\"\n", (int)mktime(tf->start));
-        fprintf(file, "scheduled_end=\"%d\"\n", (int)mktime(tf->end));
+        fprintf(file, "scheduled=\"%d:%d\"\n", (int)mktime(tf->start), (int)mktime(tf->end));
     }
 
     if (todo->deadline != NULL)
