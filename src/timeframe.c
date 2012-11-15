@@ -17,6 +17,24 @@ struct timeframe * timeframe_init()
 }
 
 
+struct timeframe * timeframe_init_alloc()
+{
+    struct timeframe *tf = timeframe_init();
+
+    if (tf!=NULL) {
+        tf->start = malloc(sizeof(struct tm));
+        tf->end = malloc(sizeof(struct tm));
+
+        if (tf->start==NULL || tf->end==NULL) {
+            timeframe_destroy(tf);
+            tf=NULL;
+        }
+    }
+
+    return tf;
+}
+
+
 void timeframe_destroy (struct timeframe *tf)
 {
     free(tf->start);

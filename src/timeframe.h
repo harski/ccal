@@ -14,6 +14,7 @@ struct timeframe {
 
 
 struct timeframe * timeframe_init();
+struct timeframe * timeframe_init_alloc();
 void timeframe_destroy (struct timeframe *tf);
 
 #endif /* TIMEFRAME_H */
