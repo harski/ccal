@@ -4,6 +4,7 @@
 #ifndef STRUTILS_H
 #define STRUTILS_H
 
+#include <stdbool.h>
 #include <stddef.h>
 
 bool is_whitespace (char c);
