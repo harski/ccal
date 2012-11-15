@@ -106,11 +106,12 @@ void appt_dump (struct appt *appt)
 }
 
 
-bool appt_validate (const struct appt *appt)
+/* Not const, because mktime edits the struct tm */
+bool appt_validate (struct appt *appt)
 {
     time_t start, end;
-    start = mktime(appt->start);
-    end = mktime(appt->end);
+    start = mktime(&appt->start);
+    end = mktime(&appt->end);
 
     if (appt->header==NULL || end<start)
         return false;

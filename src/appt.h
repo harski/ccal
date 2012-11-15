@@ -24,7 +24,7 @@ void appt_destroy (struct appt *appt);
 int appt_parse_properties (struct appt *appt, char *key, char *value);
 void appt_dump (struct appt *appt);
 bool appt_save (FILE *file, struct appt *appt);
-bool appt_validate (const struct appt *appt);
+bool appt_validate (struct appt *appt);
 
 #endif /* ENTRY_H */
 
