@@ -31,8 +31,12 @@ struct appt *appt_init()
 }
 
 
+/* TODO: fix unsafe atoi calls */
+/* TODO: localtime calls should probably be done with localtime_r */
 int appt_parse_properties (struct appt *appt, char *key, char *value)
 {
+    int retval = 1;
+
     /* check if content */
     if(!strcmp("header", key)) {
         appt->header = malloc(sizeof(char)*(strlen(value)+1));
@@ -51,9 +55,10 @@ int appt_parse_properties (struct appt *appt, char *key, char *value)
         appt->end = *localtime(&t);
     } else {
         fprintf(stderr, "Error parsing calfile: key '%s' isn't a property!\n", key);
+        retval = 0;
     }
 
-    return 1;
+    return retval;
 }
 
 
