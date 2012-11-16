@@ -4,6 +4,10 @@ Introduction
 Ccal is a calendar program with a curses user interface for terminal
 emulators.  It uses readable plain text files for storing the entries.
 
+Note that this project is in early developement stage, and things (for
+example the save format) are going to be reworked and incompabilities
+between versions will occur.
+
 
 Compiling
 =========
