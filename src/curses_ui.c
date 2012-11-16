@@ -7,7 +7,6 @@
 #include "curses_ui.h"
 #include "enter.h"
 #include "appt.h"
-#include <ncurses.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,19 +18,58 @@ enum ColorPairs {
     CP_CONTENT
 };
 
-static void update_top_bar (WINDOW * win, const struct settings *set,
-                            const char *str);
+
+enum WindowNames {
+    W_TOP_BAR,
+    W_CONTENT,
+    W_INFO_BAR,
+    W_INPUT_BAR,
+    W_COUNT
+};
+
+
+static bool appt_is_today(const struct appt *appt, const struct tm *tm);
+static void clear_all_wins(WINDOW **wins);
+static inline struct tm *get_today();
+static void destroy_windows(WINDOW **wins);
+static WINDOW **init_windows();
+static inline void next_day (struct tm *tm);
+static inline void prev_day (struct tm *tm);
+static bool prompt_for_save (const struct settings *set);
+static bool same_day (const struct tm *t1, const struct tm *t2);
 static int ui_add_appt (WINDOW *win, struct settings *set,
                   struct cal *cal);
 static void ui_init_color(const struct settings *set);
 static int ui_show_day_agenda (WINDOW *win, const struct tm *day, const struct settings *set,
                                const struct cal *cal);
-static bool appt_is_today(const struct appt *appt, const struct tm *tm);
-static inline struct tm *get_today();
-static inline void next_day (struct tm *tm);
-static inline void prev_day (struct tm *tm);
-static bool prompt_for_save (const struct settings *set);
-static bool same_day (const struct tm *t1, const struct tm *t2);
+static void update_top_bar (WINDOW * win, const struct settings *set,
+                            const char *str);
+
+
+
+/* Initialize all the windows we are going to use.
+ * This is only sensible if COLS > 3. */
+/* TODO: ensure that terminal has enough LINES. Perhaps a COLS check too? */
+static WINDOW **init_windows()
+{
+    WINDOW **wins = malloc(sizeof(WINDOW *) * W_COUNT);
+
+    /* Top bar, info bar and input bar are all one line tall. The content
+     * takes the rest */
+    wins[W_TOP_BAR] = newwin(1, COLS, 0, 0);
+    wins[W_CONTENT] = newwin(LINES-3, COLS, 1, 0);
+    wins[W_INFO_BAR] = newwin(1, COLS, LINES-2, 0);
+    wins[W_INPUT_BAR] = newwin(1, COLS, LINES-1, 0);
+
+    return wins;
+}
+
+
+static void destroy_windows(WINDOW **wins)
+{
+    for (int i=W_TOP_BAR; i<W_COUNT; ++i)
+        delwin(wins[i]);
+}
 
 
 static bool appt_is_today(const struct appt *appt, const struct tm *tm)
@@ -65,6 +103,13 @@ static inline void prev_day (struct tm *tm)
     now -= 60*60*24;
     localtime_r(&now, tm);
 
+}
+
+
+static void clear_all_wins(WINDOW **wins)
+{
+    for(int i=0; i<W_COUNT; ++i)
+        wclear(wins[i]);
 }
 
 
@@ -169,15 +214,29 @@ static int ui_add_appt (WINDOW *win, struct settings *set,
 }
 
 
-void ui_init (struct settings *set)
+/* TODO: check if it is possible to set sensible themes for
+ * non-color terminals. I.e. have ui_init_color() set also
+ * attributes for no-color mode */
+WINDOW ** ui_init (struct settings *set)
 {
     initscr();
     cbreak();
     noecho();
     curs_set(0);
 
-    if (has_colors() && set->color)
+    WINDOW ** wins = init_windows();
+
+    if (has_colors() && set->color) {
         ui_init_color(set);
+        /* Assign colors to windows */
+        wattron(wins[W_TOP_BAR], COLOR_PAIR(CP_HEADER));
+        wbkgd(wins[W_TOP_BAR], COLOR_PAIR(CP_HEADER));
+        wattron(wins[W_CONTENT], COLOR_PAIR(CP_CONTENT));
+        wbkgd(wins[W_INFO_BAR], COLOR_PAIR(CP_HEADER));
+        wbkgd(wins[W_INPUT_BAR], COLOR_PAIR(CP_CONTENT));
+    }
+
+    return wins;
 }
 
 
@@ -281,16 +340,14 @@ static int ui_show_day_agenda (WINDOW *win, const struct tm *day,  const struct 
 }
 
 
-int ui_show_dump (struct settings *set, struct cal *cal)
+int ui_show_dump (WINDOW **wins, struct settings *set, struct cal *cal)
 {
-    update_top_bar(NULL, set, "q:Quit");
     struct vector *appts = cal->appts;
-    WINDOW *d_win = newwin(LINES-1, COLS, 1, 0);
     char select;
     bool exit = false;
 
-    if (set->color)
-        wbkgd(d_win, A_NORMAL|COLOR_PAIR(CP_CONTENT));
+    clear_all_wins(wins);
+    update_top_bar(wins[W_TOP_BAR], set, "q:Quit");
 
     for (unsigned int i = 0; i<appts->elements; ++i) {
         size_t size = 32;
@@ -302,14 +359,14 @@ int ui_show_dump (struct settings *set, struct cal *cal)
         strftime(start, size, "%F %H:%M", &tmp->start);
         strftime(end, size, "%F %H:%M", &tmp->end);
 
-        mvwprintw(d_win, line, 0, "%s -> %s: %s", start, end, tmp->header);
+        mvwprintw(wins[W_CONTENT], line, 0, "%s -> %s: %s", start, end, tmp->header);
     }
 
-    wmove(d_win, 0, 0);
-    wrefresh(d_win);
+    wmove(wins[W_CONTENT], 0, 0);
+    wrefresh(wins[W_CONTENT]);
 
     while (!exit) {
-        select = wgetch(d_win);
+        select = wgetch(wins[W_CONTENT]);
         switch (select) {
 
         case 'q':
@@ -319,25 +376,23 @@ int ui_show_dump (struct settings *set, struct cal *cal)
         default:
             break;
         }
-        wrefresh(d_win);
+        wrefresh(wins[W_CONTENT]);
     }
-
-    delwin(d_win);
 
     return 1;
 }
 
 
-static void show_main_menu(WINDOW *win, struct settings *set, struct cal *cal)
+static void show_main_menu(WINDOW **wins, struct settings *set, struct cal *cal)
 {
     int line = 1;
-    update_top_bar(NULL, set, "q:Quit  s:Save cal  d:Dump all appts");
+    update_top_bar(wins[W_TOP_BAR], set, "q:Quit  s:Save cal  d:Dump all appts");
 
-    werase(win);
-    mvwprintw(win, line++, 0, "a: show day agenda");
-    mvwprintw(win, line++, 0, "A: add a new appt");
+    werase(wins[W_CONTENT]);
+    mvwprintw(wins[W_CONTENT], line++, 0, "a: show day agenda");
+    mvwprintw(wins[W_CONTENT], line++, 0, "A: add a new appt");
 
-    wrefresh(win);
+    wrefresh(wins[W_CONTENT]);
 }
 
 
@@ -348,19 +403,15 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
     WINDOW * main_win;
     struct tm *today = get_today();
 
-    ui_init(set);
+    WINDOW ** wins = ui_init(set);
 
-    main_win = newwin(LINES-1, COLS, 1, 0);
-
-    if (set->color)
-        wbkgd(main_win, A_NORMAL|COLOR_PAIR(CP_CONTENT));
+    main_win = wins[W_CONTENT];
 
     while (!exit) {
         werase(main_win);
-        show_main_menu(main_win, set, cal);
-        wrefresh(main_win);
+        show_main_menu(wins, set, cal);
 
-        select = wgetch(main_win);
+        select = wgetch(wins[W_INPUT_BAR]);
         switch (select) {
         case 'A':
             ui_add_appt(main_win, set, cal);
@@ -369,7 +420,7 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
             ui_agenda_menu(set, cal);
             break;
         case 'd':
-            ui_show_dump(set, cal);
+            ui_show_dump(wins, set, cal);
             break;
         case 'q':
             if (set->cal_changed && prompt_for_save(set)) {
@@ -388,7 +439,7 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
     }
 
     free(today);
-    delwin(main_win);
+    destroy_windows(wins);
     endwin();
 
     return 1;
@@ -405,19 +456,18 @@ static void update_top_bar (WINDOW * win, const struct settings *set,
             fprintf(stderr, "Error in creating window for 'update_top_bar'\n");
             return;
         }
+
+        /* Set the correct color theme. No need to unset this below,
+         * as the window gets deleted */
+        if (set->color) {
+            wattron(win, COLOR_PAIR(CP_HEADER));
+            for (int i = 0; i<COLS; ++i)
+                mvwprintw(win, 0, i, " ");
+        }
         m_all = true;
     }
 
-    if (set->color) {
-        wattron(win, COLOR_PAIR(CP_HEADER));
-        for (int i = 0; i<COLS; ++i)
-            mvwprintw(win, 0, i, " ");
-    }
     mvwprintw(win, 0, 0, str);
-
-    if (set->color)
-        wattroff(win, COLOR_PAIR(CP_HEADER));
-
     wrefresh(win);
 
     if (m_all)
