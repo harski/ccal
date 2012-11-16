@@ -378,6 +378,14 @@ static void show_main_menu(WINDOW **wins, struct settings *set, struct cal *cal)
     mvwprintw(wins[W_CONTENT], line++, 0, "A: add a new appt");
 
     wrefresh(wins[W_CONTENT]);
+
+    wmove(wins[W_INFO_BAR], 0, 0);
+    wclrtoeol(wins[W_INFO_BAR]);
+    wrefresh(wins[W_INFO_BAR]);
+
+    wmove(wins[W_INPUT_BAR], 0, 0);
+    wclrtoeol(wins[W_INPUT_BAR]);
+    wrefresh(wins[W_INPUT_BAR]);
 }
 
 
