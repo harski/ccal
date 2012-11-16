@@ -3,10 +3,11 @@
 
 #define _XOPEN_SOURCE
 
+#include "appt.h"
 #include "config.h"
 #include "curses_ui.h"
 #include "enter.h"
-#include "appt.h"
+#include "strutils.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -151,6 +152,39 @@ static bool same_day (const struct tm *t1, const struct tm *t2)
 }
 
 
+static void print_appt (WINDOW *win, struct appt *appt)
+{
+    const int start_col = 2;
+    int line = 2;
+    char str[128];
+
+    mvwprintw(win, line++, start_col, "Header: ");
+    if (appt->header != NULL)
+        wprintw(win, "%s", appt->header);
+
+    mvwprintw(win, line++, start_col, "Description: ");
+    if (appt->description != NULL)
+        wprintw(win, "%s", appt->description);
+
+    mvwprintw(win, line++, start_col, "Category: ");
+    if (appt->category != NULL)
+        wprintw(win, "%s", appt->category);
+
+    /* TODO: can't do this, if we don't know if the times have be
+     * initialized with SANE values. So... make appt use the struct
+     * timeframe, too? The obvious hack is UGLY */
+    tmtostr(&appt->start, str, 128);
+    mvwprintw(win, line++, start_col, "Start time: ");
+    wprintw(win, "%s", str);
+
+    tmtostr(&appt->end, str, 128);
+    mvwprintw(win, line++, start_col, "End time: ");
+    wprintw(win, "%s", str);
+
+    wrefresh(win);
+}
+
+
 static int ui_add_appt (WINDOW **wins, struct settings *set,
                         struct cal *cal)
 {
@@ -162,20 +196,26 @@ static int ui_add_appt (WINDOW **wins, struct settings *set,
     bool date_ok;
     struct tm *tss = malloc(sizeof(struct tm));;
     struct tm *tse = malloc(sizeof(struct tm));;
+    bool loop;
+    bool saved = false;
 
     update_top_bar(wins[W_TOP_BAR], set, "q:Cancel  return:Select  s:Save");
     werase(wins[W_CONTENT]);
     wclear(wins[W_INFO_BAR]);
     wclear(wins[W_INPUT_BAR]);
 
-    ui_get_string(wins[W_CONTENT], line++, 0, "Header", &tmp, &tmp_size);
+    print_appt(wins[W_CONTENT], appt);
+
+    ui_get_string(wins[W_INPUT_BAR], 0, 0, "Header", &tmp, &tmp_size);
     appt->header = malloc(1+strlen(tmp));
     strcpy(appt->header, tmp);
     tmp[0] = '\0';
 
+    print_appt(wins[W_CONTENT], appt);
+
     date_ok = false;
     while (!date_ok) {
-        int date_ret = ui_get_date(wins[W_CONTENT], line++, 0, "start time", tss);
+        int date_ret = ui_get_date(wins[W_INPUT_BAR], 0, 0, "start time", tss);
         if (date_ret) {
             appt->start = *tss;
             date_ok = true;
@@ -183,9 +223,12 @@ static int ui_add_appt (WINDOW **wins, struct settings *set,
         /* TODO: else: abort */
     }
 
+    wclear(wins[W_INPUT_BAR]);
+    print_appt(wins[W_CONTENT], appt);
+
     date_ok = false;
     while (!date_ok) {
-        int date_ret = ui_get_date(wins[W_CONTENT], line++, 0, "end time", tse);
+        int date_ret = ui_get_date(wins[W_INPUT_BAR], 0, 0, "end time", tse);
         if (date_ret) {
             appt->end = *tse;
             date_ok = true;
@@ -193,20 +236,45 @@ static int ui_add_appt (WINDOW **wins, struct settings *set,
         /* TODO: else: abort */
     }
 
-    if (appt_validate(appt)) {
-        vector_add(cal->appts, appt);
-        set->cal_changed = true;
-        success = 1;
-    } else {
-        /* TODO: report error */
-        appt_destroy(appt);
-        success = 0;
+    wclear(wins[W_INPUT_BAR]);
+    print_appt(wins[W_CONTENT], appt);
+
+    wclear(wins[W_INPUT_BAR]);
+
+    /* TODO: main loop */
+    loop = true;
+    while (loop) {
+        print_appt(wins[W_CONTENT], appt);
+        char select = wgetch(wins[W_INPUT_BAR]);
+
+        switch (select) {
+        case 'q':
+            loop = false;
+            if (!saved) {
+                if(ui_get_yes_no(wins[W_INPUT_BAR], 0, 0, "Save this entry", 'y')) {
+                    /* TODO: handle the saving, too! */
+                    vector_add(cal->appts, appt);
+                }
+            }
+            break;
+
+        case 's':
+            /* TODO: save it, too. I mean, why not? */
+            saved = true;
+            vector_add(cal->appts, appt);
+            break;
+
+        default:
+            break;
+        }
+
     }
 
     free(tmp);
     free(tss);
     free(tse);
 
+    /* TODO: this value doesn't make sense anymore! */
     return success;
 }
 
