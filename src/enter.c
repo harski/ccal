@@ -182,10 +182,7 @@ static int match_date (const char *str, struct tm *tm)
 }
 
 
-static char * tmtostr (const struct tm *tm, char *str, const size_t size)
 {
-    strftime(str, size, "%A %Y-%m-%d %H:%M", tm);
-    return str;
 }
 
 

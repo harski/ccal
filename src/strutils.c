@@ -111,3 +111,10 @@ size_t strip (char *str, size_t len)
     return remove_postfix_whitespace(str, len);
 }
 
+
+char * tmtostr (const struct tm *tm, char *str, const size_t size)
+{
+    strftime(str, size, "%A %Y-%m-%d %H:%M", tm);
+    return str;
+}
+
