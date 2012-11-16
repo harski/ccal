@@ -35,7 +35,7 @@ static void destroy_windows(WINDOW **wins);
 static WINDOW **init_windows();
 static inline void next_day (struct tm *tm);
 static inline void prev_day (struct tm *tm);
-static bool prompt_for_save (const struct settings *set);
+static bool prompt_for_save (WINDOW *win, const struct settings *set);
 static bool same_day (const struct tm *t1, const struct tm *t2);
 static int ui_add_appt (WINDOW *win, struct settings *set,
                   struct cal *cal);
@@ -113,15 +113,11 @@ static void clear_all_wins(WINDOW **wins)
 }
 
 
-bool prompt_for_save (const struct settings *set)
+bool prompt_for_save (WINDOW *win, const struct settings *set)
 {
     int input;
     bool input_ok = false;
     bool ans;
-    WINDOW *win = newwin(1, COLS, LINES-1, 0);
-
-    if (set->color)
-        wbkgd(win, A_NORMAL|COLOR_PAIR(CP_CONTENT));
 
     werase(win);
 
@@ -140,8 +136,6 @@ bool prompt_for_save (const struct settings *set)
             }
         }
     } while (!input_ok);
-
-    delwin(win);
 
     return ans;
 }
@@ -411,7 +405,7 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
             ui_show_dump(wins, set, cal);
             break;
         case 'q':
-            if (set->cal_changed && prompt_for_save(set)) {
+            if (set->cal_changed && prompt_for_save(wins[W_INPUT_BAR], set)) {
                 cal_save(cal, set->cal_file);
                 set->cal_changed = false;
             }
