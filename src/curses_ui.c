@@ -227,7 +227,9 @@ WINDOW ** ui_init (struct settings *set)
         wattron(wins[W_TOP_BAR], COLOR_PAIR(CP_HEADER));
         wbkgd(wins[W_TOP_BAR], COLOR_PAIR(CP_HEADER));
         wattron(wins[W_CONTENT], COLOR_PAIR(CP_CONTENT));
+        wattron(wins[W_INFO_BAR], COLOR_PAIR(CP_HEADER));
         wbkgd(wins[W_INFO_BAR], COLOR_PAIR(CP_HEADER));
+        wattron(wins[W_INPUT_BAR], COLOR_PAIR(CP_CONTENT));
         wbkgd(wins[W_INPUT_BAR], COLOR_PAIR(CP_CONTENT));
     }
 
