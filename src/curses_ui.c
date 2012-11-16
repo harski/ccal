@@ -197,6 +197,7 @@ static int ui_add_appt (WINDOW *win, struct settings *set,
         success = 1;
     } else {
         /* TODO: report error */
+        appt_destroy(appt);
         success = 0;
     }
 
