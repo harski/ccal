@@ -459,15 +459,13 @@ static void update_top_bar (WINDOW * win, const struct settings *set,
 
         /* Set the correct color theme. No need to unset this below,
          * as the window gets deleted */
-        if (set->color) {
+        if (set->color)
             wattron(win, COLOR_PAIR(CP_HEADER));
-            for (int i = 0; i<COLS; ++i)
-                mvwprintw(win, 0, i, " ");
-        }
         m_all = true;
     }
 
     mvwprintw(win, 0, 0, str);
+    wclrtoeol(win);
     wrefresh(win);
 
     if (m_all)
