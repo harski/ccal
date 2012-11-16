@@ -37,7 +37,7 @@ static inline void next_day (struct tm *tm);
 static inline void prev_day (struct tm *tm);
 static bool prompt_for_save (WINDOW *win, const struct settings *set);
 static bool same_day (const struct tm *t1, const struct tm *t2);
-static int ui_add_appt (WINDOW *win, struct settings *set,
+static int ui_add_appt (WINDOW **win, struct settings *set,
                   struct cal *cal);
 static void ui_init_color(const struct settings *set);
 static int ui_show_day_agenda (WINDOW *win, const struct tm *day, const struct settings *set,
@@ -151,8 +151,8 @@ static bool same_day (const struct tm *t1, const struct tm *t2)
 }
 
 
-static int ui_add_appt (WINDOW *win, struct settings *set,
-                  struct cal *cal)
+static int ui_add_appt (WINDOW **wins, struct settings *set,
+                        struct cal *cal)
 {
     struct appt * appt = appt_init();
     size_t tmp_size = 128;
@@ -163,17 +163,19 @@ static int ui_add_appt (WINDOW *win, struct settings *set,
     struct tm *tss = malloc(sizeof(struct tm));;
     struct tm *tse = malloc(sizeof(struct tm));;
 
-    update_top_bar(NULL, set, "q:Cancel  return:Select  s:Save");
-    werase(win);
+    update_top_bar(wins[W_TOP_BAR], set, "q:Cancel  return:Select  s:Save");
+    werase(wins[W_CONTENT]);
+    wclear(wins[W_INFO_BAR]);
+    wclear(wins[W_INPUT_BAR]);
 
-    ui_get_string(win, line++, 0, "Header", &tmp, &tmp_size);
+    ui_get_string(wins[W_CONTENT], line++, 0, "Header", &tmp, &tmp_size);
     appt->header = malloc(1+strlen(tmp));
     strcpy(appt->header, tmp);
     tmp[0] = '\0';
 
     date_ok = false;
     while (!date_ok) {
-        int date_ret = ui_get_date(win, line++, 0, "start time", tss);
+        int date_ret = ui_get_date(wins[W_CONTENT], line++, 0, "start time", tss);
         if (date_ret) {
             appt->start = *tss;
             date_ok = true;
@@ -183,7 +185,7 @@ static int ui_add_appt (WINDOW *win, struct settings *set,
 
     date_ok = false;
     while (!date_ok) {
-        int date_ret = ui_get_date(win, line++, 0, "end time", tse);
+        int date_ret = ui_get_date(wins[W_CONTENT], line++, 0, "end time", tse);
         if (date_ret) {
             appt->end = *tse;
             date_ok = true;
@@ -407,7 +409,7 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
         select = wgetch(wins[W_INPUT_BAR]);
         switch (select) {
         case 'A':
-            ui_add_appt(main_win, set, cal);
+            ui_add_appt(wins, set, cal);
             break;
         case 'a':
             ui_agenda_menu(wins, set, cal);
