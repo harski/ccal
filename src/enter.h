@@ -12,6 +12,7 @@ int ui_get_date (WINDOW *win, const int row, const int col,
                  const char *prompt, struct tm *tm);
 int ui_get_string (WINDOW *win, const int row, const int col,
                    const char *prompt, char **str, size_t *size);
+bool ui_get_yes_no (WINDOW *win, const int row, const int col, const char *prompt, const char def);
 
 
 #endif

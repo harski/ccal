@@ -182,7 +182,37 @@ static int match_date (const char *str, struct tm *tm)
 }
 
 
+bool ui_get_yes_no (WINDOW *win, const int row, const int col, const char *prompt, const char def)
 {
+    int get_ret;
+    bool loop = true;
+    wchar_t wc;
+    char yes = 'y'; // 121, 89
+    char no = 'n';  // 110, 78
+    bool ret;
+
+    if (yes==def)
+        yes -= 32;
+    else if (no==def)
+        no -=32;
+
+    mvwprintw(win, row, col, "%s, ", prompt);
+    wprintw(win, "%c/%c?", yes, no);
+
+    while (loop) {
+        get_ret = wget_wchar(win, &wc);
+        if (!get_ret) {
+            if (wc=='y' || (wc=='\n' && def=='y')) {
+                ret = true;
+                loop = false;
+            } else if (wc=='n' || (wc=='\n' && def=='n')) {
+                ret = false;
+                loop = false;
+            }
+        }
+    }
+
+    return ret;
 }
 
 
