@@ -93,6 +93,8 @@ int load_cal_file (struct cal *cal, const char *filepath)
 
     while (0 < (retval = getline_custom(&buffer, &buffer_len, file))) {
         ++line;
+
+        /* Check if line is empty */
         if (retval <= 1)
             continue;
 
@@ -109,8 +111,6 @@ int load_cal_file (struct cal *cal, const char *filepath)
             appt_open = 1;
             appt = appt_init();
 
-            continue;
-
         } else if (!strcmp("APPT-END", buffer)) {
             if (!appt_open) {
                 fprintf(stderr, "Syntax error in '%s' near line %u:!\n\"%s\"\n", filepath, line, buffer);
@@ -121,8 +121,6 @@ int load_cal_file (struct cal *cal, const char *filepath)
             /* TODO: validate appt before adding */
             appt_open = 0;
             vector_add(cal->appts, (void *)appt);
-
-            continue;
 
         } else if (appt_open &&
                    -1 != str_to_key_value_pairs(buffer, '=', key, READ_BUF_SIZE, value, READ_BUF_SIZE)) {
