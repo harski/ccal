@@ -259,28 +259,18 @@ static inline void print_agenda_day_appt (WINDOW *win, const struct appt *appt, 
 }
 
 
-int ui_agenda_menu (struct settings *set, struct cal *cal)
+int ui_agenda_menu (WINDOW **wins, struct settings *set, struct cal *cal)
 {
-    WINDOW *top;
-    WINDOW *win;
     bool loop = true;
     struct tm *day = get_today();
     char select;
 
-    clear();
-
-    /* content window */
-    top = newwin(1, COLS, 0, 0);
-    win = newwin(LINES-3, COLS, 1, 0);
-
-    if (set->color)
-        wbkgd(win, A_NORMAL|COLOR_PAIR(CP_CONTENT));
+    clear_all_wins(wins);
 
     do {
-        update_top_bar(top, set, "q:Quit  a:Add item  j:Next day  k:Previous day");
-        werase(win);
-        ui_show_day_agenda(win, day, set, cal);
-        select = wgetch(win);
+        update_top_bar(wins[W_TOP_BAR], set, "q:Quit  a:Add item  j:Next day  k:Previous day");
+        ui_show_day_agenda(wins[W_CONTENT], day, set, cal);
+        select = wgetch(wins[W_INPUT_BAR]);
 
         switch (select) {
         case 'j':
@@ -298,15 +288,13 @@ int ui_agenda_menu (struct settings *set, struct cal *cal)
     } while (loop);
 
     free(day);
-    delwin(top);
-    delwin(win);
 
     return 1;
 }
 
 
-static int ui_show_day_agenda (WINDOW *win, const struct tm *day,  const struct settings *set,
-                               const struct cal *cal)
+static int ui_show_day_agenda (WINDOW *win, const struct tm *day,
+                               const struct settings *set, const struct cal *cal)
 {
     char * time_str;
     int winx, winy;
@@ -417,7 +405,7 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
             ui_add_appt(main_win, set, cal);
             break;
         case 'a':
-            ui_agenda_menu(set, cal);
+            ui_agenda_menu(wins, set, cal);
             break;
         case 'd':
             ui_show_dump(wins, set, cal);
@@ -447,7 +435,7 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
 
 
 static void update_top_bar (WINDOW * win, const struct settings *set,
-                               const char *str)
+                            const char *str)
 {
     bool m_all = false;
     if (win==NULL) {
