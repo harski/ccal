@@ -1,5 +1,6 @@
 AC_PREREQ([2.68])
 AC_INIT([ccal], [0.1], [hartitu@gmail.com])
+AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
 AC_CONFIG_SRCDIR([src/cal.c])
