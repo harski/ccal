@@ -1,12 +1,13 @@
 /* Copyright (C) 2012 Tuomo Hartikainen <hartitu@gmail.com>
  * Licensed under GPLv3, see LICENSE for more information. */
 
+#define _XOPEN_SOURCE
 #define _XOPEN_SOURCE_EXTENDED
 
-#include "config.h"
 #include "enter.h"
 #include "log.h"
 #include "strutils.h"
+#include <ncurses.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>

@@ -1,7 +1,6 @@
 /* Copyright (C) 2012 Tuomo Hartikainen <hartitu@gmail.com>
  * Licensed under GPLv3, see LICENSE for more information. */
 
-#include "config.h"
 #include "strutils.h"
 #include "todo.h"
 #include <stdlib.h>

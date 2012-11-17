@@ -1,7 +1,8 @@
 /* Copyright (C) 2012 Tuomo Hartikainen <hartitu@gmail.com>
  * Licensed under GPLv3, see LICENSE for more information. */
 
-#include "config.h"
+#define _XOPEN_SOURCE
+
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>

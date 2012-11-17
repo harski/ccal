@@ -1,5 +1,5 @@
-
-SOURCE_FILES="appt.c \
+bin_PROGRAMS = ccal
+ccal_SOURCES = appt.c \
         cal.c \
         curses_ui.c \
         enter.c \
@@ -9,7 +9,4 @@ SOURCE_FILES="appt.c \
         settings.c \
         strutils.c \
         timeframe.c \
-        todo.c"
-
-GENERATED_HEADERS="config.h"
-
+        todo.c

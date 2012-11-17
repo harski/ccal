@@ -1,7 +1,7 @@
 /* Copyright (C) 2012 Tuomo Hartikainen <hartitu@gmail.com>
  * Licensed under GPLv3, see LICENSE for more information. */
 
-#include "config.h"
+#include "../config.h"
 
 #include <getopt.h>
 #include <stdio.h>
@@ -17,7 +17,7 @@
 
 void print_version()
 {
-    printf("%s %s\n", NAME, VERSION);
+    printf("%s\n", PACKAGE_STRING);
 }
 
 

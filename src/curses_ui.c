@@ -4,7 +4,6 @@
 #define _XOPEN_SOURCE
 
 #include "appt.h"
-#include "config.h"
 #include "curses_ui.h"
 #include "enter.h"
 #include "strutils.h"
