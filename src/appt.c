@@ -15,19 +15,26 @@
 
 struct appt *appt_init()
 {
-    time_t t = time(NULL);
     struct appt *appt = malloc(sizeof(struct appt));
-    if (appt==NULL)
-        return NULL;
+    struct timeframe *tf = malloc(sizeof(struct timeframe));
+
+    if (appt==NULL || tf==NULL)
+        goto init_error;
+
+    appt->tf = tf;
+    tf->start = NULL;
+    tf->end = NULL;
 
     appt->header = NULL;
     appt->description = NULL;
     appt->category = NULL;
 
-    localtime_r(&t, &appt->start);
-    localtime_r(&t, &appt->end);
-
     return appt;
+
+init_error:
+    free(appt);
+    free(tf);
+    return NULL;
 }
 
 
@@ -48,11 +55,25 @@ int appt_parse_properties (struct appt *appt, char *key, char *value)
         appt->category = malloc(sizeof(char)*(strlen(value)+1));
         strcpy(appt->category, value);
     } else if (!strcmp("start", key)) {
+        if (appt->tf->start == NULL) {
+            appt->tf->start = malloc(sizeof(struct tm));
+        } else {
+            /* the save entry is broken, having multiple start times */
+            /* TODO: do something sensible about it. At least report,
+             * should we fail, too? */
+        }
         time_t t = (time_t) atoi(value);
-        appt->start = *localtime(&t);
+        localtime_r(&t, appt->tf->start);
     } else if (!strcmp("end", key)) {
+        if (appt->tf->end == NULL) {
+            appt->tf->end = malloc(sizeof(struct tm));
+        } else {
+            /* the save entry is broken, having multiple start times */
+            /* TODO: do something sensible about it. At least report,
+             * should we fail, too? */
+        }
         time_t t = (time_t) atoi(value);
-        appt->end = *localtime(&t);
+        localtime_r(&t, appt->tf->end);
     } else {
         fprintf(stderr, "Error parsing calfile: key '%s' isn't a property!\n", key);
         retval = 0;
@@ -73,8 +94,8 @@ bool appt_save (FILE *file, struct appt *appt)
     if (appt->category!=NULL)
         fprintf(file, "category=\"%s\"\n", appt->category);
 
-    fprintf(file, "start=%d\n", (int)mktime(&appt->start));
-    fprintf(file, "end=%d\n", (int)mktime(&appt->end));
+    fprintf(file, "start=%d\n", (int)mktime(appt->tf->start));
+    fprintf(file, "end=%d\n", (int)mktime(appt->tf->end));
 
     fprintf(file, "APPT-END\n\n");
 
@@ -87,6 +108,11 @@ void appt_destroy (struct appt *appt)
     free(appt->header);
     free(appt->description);
     free(appt->category);
+    if (appt->tf!=NULL) {
+        free(appt->tf->start);
+        free(appt->tf->end);
+        free(appt->tf);
+    }
     free(appt);
 }
 
@@ -97,8 +123,8 @@ void appt_dump (struct appt *appt)
     char start[size];
     char end[size];
 
-    strftime(start, size, "%F %H:%M", &appt->start);
-    strftime(end, size, "%F %H:%M", &appt->end);
+    strftime(start, size, "%F %H:%M", appt->tf->start);
+    strftime(end, size, "%F %H:%M", appt->tf->end);
 
     printf ("%s -> %s\n", start, end);
     printf("%s\n", appt->header);
@@ -115,8 +141,8 @@ void appt_dump (struct appt *appt)
 bool appt_validate (struct appt *appt)
 {
     time_t start, end;
-    start = mktime(&appt->start);
-    end = mktime(&appt->end);
+    start = mktime(appt->tf->start);
+    end = mktime(appt->tf->end);
 
     if (appt->header==NULL || end<start)
         return false;

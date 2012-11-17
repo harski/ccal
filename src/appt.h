@@ -8,13 +8,13 @@
 #include <time.h>
 #include <vector.h>
 #include <stdio.h>
+#include "timeframe.h"
 
 struct appt {
     char *header;
     char *description;
     char *category;
-    struct tm start;
-    struct tm end;
+    struct timeframe *tf;
 };
 
 

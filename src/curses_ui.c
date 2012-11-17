@@ -75,7 +75,7 @@ static void destroy_windows(WINDOW **wins)
 
 static bool appt_is_today(const struct appt *appt, const struct tm *tm)
 {
-    if (same_day(&(appt->start), tm) || same_day(&(appt->end), tm))
+    if (same_day(appt->tf->start, tm) || same_day(appt->tf->end, tm))
         return true;
 
     return false;
@@ -170,21 +170,23 @@ static void print_appt (WINDOW *win, struct appt *appt)
     if (appt->category != NULL)
         wprintw(win, "%s", appt->category);
 
-    /* TODO: can't do this, if we don't know if the times have be
-     * initialized with SANE values. So... make appt use the struct
-     * timeframe, too? The obvious hack is UGLY */
-    tmtostr(&appt->start, str, 128);
     mvwprintw(win, line++, start_col, "Start time: ");
-    wprintw(win, "%s", str);
+    if (appt->tf->start != NULL) {
+        tmtostr(appt->tf->start, str, 128);
+        wprintw(win, "%s", str);
+    }
 
-    tmtostr(&appt->end, str, 128);
     mvwprintw(win, line++, start_col, "End time: ");
-    wprintw(win, "%s", str);
+    if (appt->tf->end != NULL) {
+        tmtostr(appt->tf->end, str, 128);
+        wprintw(win, "%s", str);
+    }
 
     wrefresh(win);
 }
 
 
+/* TODO: tss and tse are ugly, fix it */
 static int ui_add_appt (WINDOW **wins, struct settings *set,
                         struct cal *cal)
 {
@@ -194,8 +196,6 @@ static int ui_add_appt (WINDOW **wins, struct settings *set,
     int success = 1;
     int line = 2;
     bool date_ok;
-    struct tm *tss = malloc(sizeof(struct tm));;
-    struct tm *tse = malloc(sizeof(struct tm));;
     bool loop;
     bool saved = false;
 
@@ -214,10 +214,12 @@ static int ui_add_appt (WINDOW **wins, struct settings *set,
     print_appt(wins[W_CONTENT], appt);
 
     date_ok = false;
+    struct tm *tss = malloc(sizeof(struct tm));;
     while (!date_ok) {
         int date_ret = ui_get_date(wins[W_INPUT_BAR], 0, 0, "start time", tss);
         if (date_ret) {
-            appt->start = *tss;
+            /* TODO: this needs to be _copied_ */
+            appt->tf->start = tss;
             date_ok = true;
         }
         /* TODO: else: abort */
@@ -227,10 +229,12 @@ static int ui_add_appt (WINDOW **wins, struct settings *set,
     print_appt(wins[W_CONTENT], appt);
 
     date_ok = false;
+    struct tm *tse = malloc(sizeof(struct tm));;
     while (!date_ok) {
         int date_ret = ui_get_date(wins[W_INPUT_BAR], 0, 0, "end time", tse);
         if (date_ret) {
-            appt->end = *tse;
+            /* TODO: this needs to be _copied_ */
+            appt->tf->end = tse;
             date_ok = true;
         }
         /* TODO: else: abort */
@@ -271,8 +275,6 @@ static int ui_add_appt (WINDOW **wins, struct settings *set,
     }
 
     free(tmp);
-    free(tss);
-    free(tse);
 
     /* TODO: this value doesn't make sense anymore! */
     return success;
@@ -318,8 +320,8 @@ static inline void print_agenda_day_appt (WINDOW *win, const struct appt *appt, 
 {
     char date[13];
     int appt_start_line = 2;
-    snprintf(date, 13, "%.2d:%.2d-%.2d:%.2d:", appt->start.tm_hour,
-             appt->start.tm_min, appt->end.tm_hour, appt->end.tm_min);
+    snprintf(date, 13, "%.2d:%.2d-%.2d:%.2d:", appt->tf->start->tm_hour,
+             appt->tf->start->tm_min, appt->tf->end->tm_hour, appt->tf->end->tm_min);
     mvwprintw (win, appt_start_line+index, 0, "%s", date);
     mvwprintw (win, appt_start_line+index, strlen(date)+1, "%s", appt->header);
 
@@ -411,8 +413,8 @@ int ui_show_dump (WINDOW **wins, struct settings *set, struct cal *cal)
         struct appt * tmp = vector_get(appts, i);
         int line = i+1;
 
-        strftime(start, size, "%F %H:%M", &tmp->start);
-        strftime(end, size, "%F %H:%M", &tmp->end);
+        strftime(start, size, "%F %H:%M", tmp->tf->start);
+        strftime(end, size, "%F %H:%M", tmp->tf->end);
 
         mvwprintw(wins[W_CONTENT], line, 0, "%s -> %s: %s", start, end, tmp->header);
     }
