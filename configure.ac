@@ -10,8 +10,8 @@ AC_CONFIG_HEADERS([config.h])
 AC_PROG_CC_C99
 
 # Checks for libraries.
-AC_CHECK_LIB([ncursesw], [get_wch])
-AC_CHECK_LIB([vector], [vector_init])
+AC_CHECK_LIB([ncursesw], [get_wch], , AC_MSG_ERROR([Cannot find ncursesw]))
+AC_CHECK_LIB([vector], [vector_init], , AC_MSG_ERROR([Cannot find libvector]))
 
 # Checks for header files.
 AC_CHECK_HEADERS([locale.h stddef.h stdlib.h string.h unistd.h wchar.h])
