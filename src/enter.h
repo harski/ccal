@@ -4,7 +4,9 @@
 #ifndef ENTER_H
 #define ENTER_H
 
-#include <ncurses.h>
+#define _XOPEN_SOURCE_EXTENDED
+
+#include <ncursesw/ncurses.h>
 #include <stddef.h>
 #include <time.h>
 
