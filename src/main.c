@@ -29,6 +29,16 @@ int main(int argc, char *argv[])
     int opt;
     char set_file[128];
 
+    if (set==NULL) {
+        fprintf(stderr, "Initializing settings failed. Exiting...");
+        return 1;
+    }
+
+    if (cal==NULL) {
+        fprintf(stderr, "Initializing calendar failed. Exiting...");
+        return 1;
+    }
+
     setlocale(LC_CTYPE, "");
 
     settings_default_file(set_file);
