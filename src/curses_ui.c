@@ -192,13 +192,13 @@ static int ui_add_appt (WINDOW **wins, struct settings *set,
     struct appt * appt = appt_init();
     size_t tmp_size = 128;
     char *tmp = malloc(tmp_size);
-    int success = 1;
+    int appt_added;
     int line = 2;
     bool date_ok;
     bool loop;
     bool saved = false;
 
-    update_top_bar(wins[W_TOP_BAR], set, "q:Cancel  return:Select  s:Save");
+    update_top_bar(wins[W_TOP_BAR], set, "q:Return");
     werase(wins[W_CONTENT]);
     wclear(wins[W_INFO_BAR]);
     wclear(wins[W_INPUT_BAR]);
@@ -248,36 +248,32 @@ static int ui_add_appt (WINDOW **wins, struct settings *set,
     /* TODO: main loop */
     loop = true;
     while (loop) {
+        /* Update appt information */
         print_appt(wins[W_CONTENT], appt);
-        char select = wgetch(wins[W_INPUT_BAR]);
 
-        switch (select) {
+        switch (wgetch(wins[W_INPUT_BAR])) {
         case 'q':
             loop = false;
             if (!saved) {
-                if(ui_get_yes_no(wins[W_INPUT_BAR], 0, 0, "Save this entry", 'y')) {
-                    /* TODO: handle the saving, too! */
+                /* Ask if entry is to be saved */
+                if (ui_get_yes_no(wins[W_INPUT_BAR], 0, 0, "Save this entry", 'y')) {
                     vector_add(cal->appts, appt);
+                    set->cal_changed = true;
+                    appt_added = 1;
+                } else {
+                    appt_added = 0;
                 }
             }
-            break;
-
-        case 's':
-            /* TODO: save it, too. I mean, why not? */
-            saved = true;
-            vector_add(cal->appts, appt);
             break;
 
         default:
             break;
         }
-
     }
 
     free(tmp);
 
-    /* TODO: this value doesn't make sense anymore! */
-    return success;
+    return appt_added;
 }
 
 
@@ -493,7 +489,8 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
             exit = true;
             break;
         case 's':
-            cal_save(cal, set->cal_file);
+            if (set->cal_changed)
+                cal_save(cal, set->cal_file);
             set->cal_changed = false;
             break;
         default:
