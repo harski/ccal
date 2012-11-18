@@ -186,6 +186,7 @@ static void print_appt (WINDOW *win, struct appt *appt)
 
 
 /* TODO: tss and tse are ugly, fix it */
+/* TODO: Add means to abort in the middle of entering header/times */
 static int ui_add_appt (WINDOW **wins, struct settings *set,
                         struct cal *cal)
 {
@@ -222,7 +223,6 @@ static int ui_add_appt (WINDOW **wins, struct settings *set,
             appt->tf->start = tss;
             date_ok = true;
         }
-        /* TODO: else: abort */
     }
 
     wclear(wins[W_INPUT_BAR]);
@@ -237,7 +237,6 @@ static int ui_add_appt (WINDOW **wins, struct settings *set,
             appt->tf->end = tse;
             date_ok = true;
         }
-        /* TODO: else: abort */
     }
 
     wclear(wins[W_INPUT_BAR]);
@@ -262,6 +261,7 @@ static int ui_add_appt (WINDOW **wins, struct settings *set,
                     appt_added = 1;
                 } else {
                     appt_added = 0;
+                    appt_destroy(appt);
                 }
             }
             break;
