@@ -14,6 +14,9 @@ AC_CHECK_LIB([ncursesw], [get_wch], , AC_MSG_ERROR([Cannot find ncursesw]))
 AC_CHECK_LIB([vector], [vector_init], , AC_MSG_ERROR([Cannot find libvector]))
 
 AX_WITH_CURSES
+if test "x$ax_cv_header_ncursesw_curses_h" != xyes && "xx$ax_cv_header_ncursesw_h" != xyes; then
+    AC_MSG_ERROR([Cannot find a header for ncursesw])
+fi
 
 # Checks for header files.
 AC_CHECK_HEADERS([locale.h stddef.h stdlib.h string.h unistd.h wchar.h])
