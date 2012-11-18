@@ -210,6 +210,7 @@ static int ui_add_appt (WINDOW **wins, struct settings *set,
     strcpy(appt->header, tmp);
     tmp[0] = '\0';
 
+    wclear(wins[W_INPUT_BAR]);
     print_appt(wins[W_CONTENT], appt);
 
     date_ok = false;
