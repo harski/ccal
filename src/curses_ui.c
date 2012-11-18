@@ -379,16 +379,14 @@ static int ui_show_day_agenda (WINDOW *win, const struct tm *day,
 
     mvwprintw(win, 1, 0, time_str);
 
-    if (appts->elements > 0) {
-        for(unsigned int i=0; i < appts->elements && (unsigned)winx > i; ++i) {
-            appt = (struct appt *) vector_get(appts, i);
-            if (appt_is_today(appt, day)) {
-                print_agenda_day_appt(win, appt, appts_day++);
-            }
-        }
-    } else {
-        mvwprintw(win, 4, 3, "Nothing to do today :)");
+    for(unsigned int i=0; i < appts->elements && (unsigned)winx > i; ++i) {
+        appt = (struct appt *) vector_get(appts, i);
+        if (appt_is_today(appt, day))
+            print_agenda_day_appt(win, appt, appts_day++);
     }
+
+    if (!appts_day)
+        mvwprintw(win, 4, 3, "Nothing to do today :)");
 
     wrefresh(win);
 
