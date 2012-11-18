@@ -65,18 +65,39 @@ void removequotes (char *str)
 }
 
 
-/* TODO: check if copies can fit into arrays */
+/* TODO: Get lengths as pointers, so the new lengths can be returned.
+ * Their size is now only implied: min(keylen, strlen(key)) */
+/* If key or value are NULL, they get allocated by realloc */
 int str_to_key_value_pairs (const char *str, const char separator, char *key,
                             size_t keylen, char *value, size_t valuelen)
 {
     int separator_index = -1;
+    int str_len = strlen(str);
 
-    for (int i=0; str[i] != '\0'; ++i)
-        if (str[i] == separator)
+    for (int i=0; str_len; ++i) {
+        if (str[i] == separator) {
             separator_index = i;
+            break;
+        }
+    }
 
     if (separator_index == -1)
         return 0;
+
+    /* Ensure that key fits */
+    if (keylen < separator_index+1) {
+        if(realloc(key, separator_index+1)==NULL) {
+            /* Realloc failed. We should too */
+            return 0;
+        }
+    }
+
+    /* Ensure that value fits */
+    if (valuelen < str_len-separator_index) {
+        if(realloc(key, str_len-separator_index)==NULL) {
+            return 0;
+        }
+    }
 
     strncpy(key, str, separator_index);
     key[separator_index] = '\0';
