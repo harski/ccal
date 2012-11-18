@@ -6,7 +6,14 @@
 
 #define _XOPEN_SOURCE_EXTENDED
 
-#include <ncursesw/ncurses.h>
+#include "../config.h"
+
+#ifdef HAVE_NCURSESW_CURSES_H
+# include <ncursesw/ncurses.h>
+#elif HAVE_NCURSESW_H
+# include <ncursesw.h>
+#endif
+
 #include <stddef.h>
 #include <time.h>
 

@@ -6,8 +6,13 @@
 
 #include "cal.h"
 #include "settings.h"
-#include <ncurses.h>
+#include "../config.h"
 
+#ifdef HAVE_NCURSESW_CURSES_H
+# include <ncursesw/ncurses.h>
+#elif HAVE_NCURSESW_H
+# include <ncursesw.h>
+#endif
 
 int ui_show_dump (WINDOW **wins, struct settings *set, struct cal *cal);
 int ui_show_main_view (struct settings *set, struct cal *cal);
