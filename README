@@ -19,6 +19,9 @@ the dependencies are met you can configure and compile ccal with:
 $ ./configure.sh
 $ make
 
+If you don't have the configure script, you need autotools to generate
+it. If you have them installed, try running the autogen.sh script.
+
 
 Installing
 ==========
