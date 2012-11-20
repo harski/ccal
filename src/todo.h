@@ -4,11 +4,11 @@
 #ifndef TODO_H
 #define TODO_H
 
-#include <vector.h>
-#include <time.h>
+#include "timeframe.h"
+#include "vector.h"
 #include <stdbool.h>
 #include <stdio.h>
-#include "timeframe.h"
+#include <time.h>
 
 
 enum Status {

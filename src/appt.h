@@ -4,11 +4,11 @@
 #ifndef ENTRY_H
 #define ENTRY_H
 
+#include "timeframe.h"
+#include "vector.h"
 #include <stdbool.h>
 #include <time.h>
-#include <vector.h>
 #include <stdio.h>
-#include "timeframe.h"
 
 struct appt {
     char *header;

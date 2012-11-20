@@ -12,15 +12,11 @@ between versions will occur.
 Compiling
 =========
 
-Ccal needs two libraries: nucrsesw and vector. If you don't have
-libvector, you can get it from https://github.com/harski/libvector. When
-the dependencies are met you can configure and compile ccal with:
-
 $ ./configure.sh
 $ make
 
 If you don't have the configure script, you need autotools to generate
-it. If you have them installed, try running the autogen.sh script.
+it. When you have them installed, try running the autogen.sh script.
 
 
 Installing

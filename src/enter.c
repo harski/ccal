@@ -6,10 +6,10 @@
 #include "enter.h"
 #include "log.h"
 #include "strutils.h"
+#include "vector.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <vector.h>
 #include <wchar.h>
 
 #define CTRL(c) ((c) & 037)

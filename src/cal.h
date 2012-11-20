@@ -4,8 +4,8 @@
 #ifndef CAL_H
 #define CAL_H
 
+#include "vector.h"
 #include <stdbool.h>
-#include <vector.h>
 
 
 struct cal {

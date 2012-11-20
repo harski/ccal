@@ -22,4 +22,6 @@ ccal_SOURCES = \
     timeframe.c \
     timeframe.h \
     todo.c \
-    todo.h
+    todo.h \
+	vector.h \
+	vector.c
