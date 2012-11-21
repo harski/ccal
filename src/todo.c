@@ -43,8 +43,6 @@ void todo_destroy (struct todo *todo)
 }
 
 
-/* TODO: time parsing with atoi is not checked. It should be checked.
- * Check it. */
 int todo_parse_properties (struct todo *todo, char *key, char *value)
 {
     int retval = 1;
@@ -60,9 +58,14 @@ int todo_parse_properties (struct todo *todo, char *key, char *value)
         todo->category = malloc(sizeof(char)*(strlen(value)+1));
         strcpy(todo->category, value);
     } else if (!strcmp("deadline", key)) {
-        time_t t = (time_t) atoi(value);
-        todo->deadline = malloc(sizeof(struct tm));
-        localtime_r(&t, todo->deadline);
+        if (is_numeric(value)) {
+            time_t t = (time_t) atoi(value);
+            todo->deadline = malloc(sizeof(struct tm));
+            localtime_r(&t, todo->deadline);
+        } else {
+            /* TODO: report error */
+            retval = 0;
+        }
     } else if (!strcmp("scheduled", key)) {
         /* TODO: continue here. The split of times can be done with the
          * same function that already splits the keys and values */
@@ -72,13 +75,16 @@ int todo_parse_properties (struct todo *todo, char *key, char *value)
 
         if (start[0]=='\0' || end[0]=='\0') {
             retval=0;
+        } else if (is_numeric(start) && is_numeric(end)) {
+                struct timeframe *tf = timeframe_init_alloc();
+                time_t tmp = (time_t) atoi(start);
+                localtime_r(&tmp, tf->start);
+                tmp = (time_t) atoi(end);
+                localtime_r(&tmp, tf->end);
         } else {
-            struct timeframe *tf = timeframe_init_alloc();
-            /* TODO: start and end is_numeric() */
-            time_t tmp = (time_t) atoi(start);
-            localtime_r(&tmp, tf->start);
-            tmp = (time_t) atoi(end);
-            localtime_r(&tmp, tf->end);
+            /* TODO: Report error */
+            /* Value is empty or not numeric */
+            retval = 0;
         }
     } else {
         fprintf(stderr, "Error parsing calfile: key '%s' isn't a property!\n", key);
