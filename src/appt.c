@@ -6,6 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "appt.h"
+#include "strutils.h"
 
 
 #define INPUT_BUFFER_SIZE 128
@@ -36,8 +37,6 @@ init_error:
 }
 
 
-/* TODO: fix unsafe atoi calls */
-/* TODO: localtime calls should probably be done with localtime_r */
 int appt_parse_properties (struct appt *appt, char *key, char *value)
 {
     int retval = 1;
@@ -60,8 +59,14 @@ int appt_parse_properties (struct appt *appt, char *key, char *value)
             /* TODO: do something sensible about it. At least report,
              * should we fail, too? */
         }
-        time_t t = (time_t) atoi(value);
-        localtime_r(&t, appt->tf->start);
+
+        if (is_numeric(value)) {
+            time_t t = (time_t) atoi(value);
+            localtime_r(&t, appt->tf->start);
+        } else {
+            /* TODO: again, report error */
+            retval = 0;
+        }
     } else if (!strcmp("end", key)) {
         if (appt->tf->end == NULL) {
             appt->tf->end = malloc(sizeof(struct tm));
@@ -70,8 +75,14 @@ int appt_parse_properties (struct appt *appt, char *key, char *value)
             /* TODO: do something sensible about it. At least report,
              * should we fail, too? */
         }
-        time_t t = (time_t) atoi(value);
-        localtime_r(&t, appt->tf->end);
+
+        if (is_numeric(value)) {
+            time_t t = (time_t) atoi(value);
+            localtime_r(&t, appt->tf->end);
+        } else {
+            /* TODO: again, report error */
+            retval = 0;
+        }
     } else {
         fprintf(stderr, "Error parsing calfile: key '%s' isn't a property!\n", key);
         retval = 0;
