@@ -11,6 +11,16 @@
 
 #define WS "\t\n "
 
+bool is_numeric (const char *str)
+{
+    for (int i=0; str[i]!='\0'; ++i)
+        if (str[i]<48 || str[i]>57)
+            return false;
+
+    return true;
+}
+
+
 bool is_whitespace (char c)
 {
     unsigned int i=0;

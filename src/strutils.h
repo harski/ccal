@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <time.h>
 
+bool is_numeric (const char *str);
 bool is_whitespace (char c);
 size_t remove_postfix_whitespace (char *str, size_t len);
 size_t remove_prefix_whitespace (char *str, size_t len);
