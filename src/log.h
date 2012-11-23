@@ -5,7 +5,17 @@
 #define LOG_H
 
 #include <stdarg.h>
+#include <stdbool.h>
 
+enum LogLevel {
+    LL_ERROR,
+    LL_WARNING,
+    LL_INFO,
+    LL_DEBUG
+};
+
+void do_log (enum LogLevel ll, const char *fmt, ...);
+bool log_set_file (const char *filename);
 void wlog (const char *path, const char *fmt, ...);
 
 #endif /* LOG_H */
