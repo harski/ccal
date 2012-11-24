@@ -8,6 +8,7 @@
 #include "appt.h"
 #include "cal.h"
 #include "getline.h"
+#include "log.h"
 #include "strutils.h"
 
 #define READ_BUF_SIZE 512
@@ -74,13 +75,7 @@ bool cal_save (const struct cal *cal, const char *filename)
 
 int load_cal_file (struct cal *cal, const char *filepath)
 {
-    FILE *file = fopen(filepath, "r");
-
-    if (file==NULL) {
-        fprintf(stderr, "Calendar file '%s' not found\n", filepath);
-        return 0;
-    }
-
+    FILE *file;
     size_t buffer_len = READ_BUF_SIZE;
     char *buffer = malloc(sizeof(char)*READ_BUF_SIZE);
     int retval;
@@ -90,6 +85,18 @@ int load_cal_file (struct cal *cal, const char *filepath)
 
     char key[READ_BUF_SIZE];
     char value[READ_BUF_SIZE];
+
+    file = fopen(filepath, "r");
+
+    if (file==NULL) {
+        do_log(LL_ERROR, "Calendar file '%s' not found or cannot be opened", filepath);
+        return 0;
+    }
+
+    if (buffer==NULL) {
+        do_log(LL_ERROR, "Malloc failed in %s:%s", __FILE__, __func__);
+        return 0;
+    }
 
     while (0 < (retval = getline_custom(&buffer, &buffer_len, file))) {
         ++line;
@@ -103,7 +110,8 @@ int load_cal_file (struct cal *cal, const char *filepath)
         /* TODO: check if content */
         if(!strcmp("APPT-START", buffer)) {
             if (appt_open) {
-                fprintf(stderr, "Syntax error in '%s' near line %u:!\n\"%s\"\n", filepath, line, buffer);
+                do_log(LL_WARNING, "Syntax error in '%s' near line %u:\n\"%s\"",
+                       filepath, line, buffer);
                 /* TODO: cleanup, exit */
                 return 0;
             }
@@ -113,7 +121,8 @@ int load_cal_file (struct cal *cal, const char *filepath)
 
         } else if (!strcmp("APPT-END", buffer)) {
             if (!appt_open) {
-                fprintf(stderr, "Syntax error in '%s' near line %u:!\n\"%s\"\n", filepath, line, buffer);
+                do_log(LL_WARNING, "Syntax error in '%s' near line %u:\n\"%s\"",
+                       filepath, line, buffer);
                 /* TODO: cleanup, exit */
                 return 0;
             }

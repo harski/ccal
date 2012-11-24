@@ -1,6 +1,7 @@
 /* Copyright (C) 2012 Tuomo Hartikainen <hartitu@gmail.com>
  * Licensed under GPLv3, see LICENSE for more information. */
 
+#include "log.h"
 #include "strutils.h"
 #include "todo.h"
 #include <stdlib.h>
@@ -87,7 +88,7 @@ int todo_parse_properties (struct todo *todo, char *key, char *value)
             retval = 0;
         }
     } else {
-        fprintf(stderr, "Error parsing calfile: key '%s' isn't a property!\n", key);
+        do_log(LL_WARNING, "Parse error in calfile: key '%s' isn't a property!", key);
         retval = 0;
     }
 

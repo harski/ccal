@@ -6,6 +6,7 @@
 #include "appt.h"
 #include "curses_ui.h"
 #include "enter.h"
+#include "log.h"
 #include "strutils.h"
 #include <stdbool.h>
 #include <stdlib.h>
@@ -518,7 +519,7 @@ static void update_top_bar (WINDOW * win, const struct settings *set,
     if (win==NULL) {
         win = newwin(1, COLS, 0, 0);
         if (win==NULL) {
-            fprintf(stderr, "Error in creating window for 'update_top_bar'\n");
+            do_log(LL_ERROR, "%s" "Error in creating window for 'update_top_bar'");
             return;
         }
 

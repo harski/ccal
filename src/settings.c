@@ -2,6 +2,7 @@
  * Licensed under GPLv3, see LICENSE for more information. */
 
 #include "getline.h"
+#include "log.h"
 #include "settings.h"
 #include "strutils.h"
 #include <stdio.h>
@@ -42,7 +43,8 @@ static void scan_val (struct settings *set, const char *key, const char *val)
         else if (!strcmp(val, "false"))
             set->color = false;
         else
-            fprintf(stderr, "'%s' is not a valid value for setting color\n", val);
+            do_log(LL_WARNING, "'%s' is not a valid value for color"
+                               " (invalid value in config file)", val);
     }
 }
 
