@@ -75,13 +75,14 @@ bool cal_save (const struct cal *cal, const char *filename)
 
 int load_cal_file (struct cal *cal, const char *filepath)
 {
+    int success = 1;
     FILE *file;
     size_t buffer_len = READ_BUF_SIZE;
     char *buffer = malloc(sizeof(char)*READ_BUF_SIZE);
     int retval;
     int appt_open = 0;
     unsigned int line = 0;
-    struct appt *appt;
+    struct appt *appt = NULL;
 
     char key[READ_BUF_SIZE];
     char value[READ_BUF_SIZE];
@@ -98,7 +99,7 @@ int load_cal_file (struct cal *cal, const char *filepath)
         return 0;
     }
 
-    while (0 < (retval = getline_custom(&buffer, &buffer_len, file))) {
+    while (0 < (retval = getline_custom(&buffer, &buffer_len, file)) && success) {
         ++line;
 
         /* Check if line is empty */
@@ -107,44 +108,52 @@ int load_cal_file (struct cal *cal, const char *filepath)
 
         strip(buffer, retval);
 
-        /* TODO: check if content */
+        /* check if content */
         if(!strcmp("APPT-START", buffer)) {
             if (appt_open) {
                 do_log(LL_WARNING, "Syntax error in '%s' near line %u:\n\"%s\"",
                        filepath, line, buffer);
-                /* TODO: cleanup, exit */
-                return 0;
+                success = 0;
+            } else {
+                appt_open = 1;
+                appt = appt_init();
             }
-
-            appt_open = 1;
-            appt = appt_init();
-
         } else if (!strcmp("APPT-END", buffer)) {
             if (!appt_open) {
+                /* Check if appt is opened before it's closed */
                 do_log(LL_WARNING, "Syntax error in '%s' near line %u:\n\"%s\"",
                        filepath, line, buffer);
-                /* TODO: cleanup, exit */
-                return 0;
+                success = 0;
+            } else if (appt_validate(appt)) {
+                /* validate appt before adding */
+                vector_add(cal->appts, (void *)appt);
+                appt_open = 0;
+                appt = NULL;
+            } else {
+                /* The parsed appt entry does not validate: dump it */
+                do_log(LL_WARNING, "%s", "Invalid appt in savefile");
+                success = 0;
             }
-
-            /* TODO: validate appt before adding */
-            appt_open = 0;
-            vector_add(cal->appts, (void *)appt);
-
         } else if (appt_open &&
-                   -1 != str_to_key_value_pairs(buffer, '=', key, READ_BUF_SIZE, value, READ_BUF_SIZE)) {
+                   -1 != str_to_key_value_pairs(buffer, '=', key, READ_BUF_SIZE,
+                                                value, READ_BUF_SIZE)) {
+            /* Appt is open and we got a key-value pair */
             strip(key, strlen(key));
             strip(value, strlen(value));
             removequotes(value);
 
+            /* TODO: handle errorous key-values here */
             appt_parse_properties(appt, key, value);
         }
 
-    }
+    } /* /while */
+
+    if (appt!=NULL)
+        appt_destroy(appt);
 
     free(buffer);
     fclose(file);
 
-    return 1;
+    return success;
 }
 
