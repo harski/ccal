@@ -261,16 +261,18 @@ int ui_get_date (WINDOW *win, const int row, const int col,
 
                 ++characters;
                 written = wctomb(tmp+tmp_len, wc);
-                if (written == -1) {
-                    fprintf(stderr, "Can't transform wide char to multibyte in %s:%d:%s\n",
+
+                if (written == -1)
+                    do_log(LL_WARNING, "Can't transform wide char to multibyte in %s:%d:%s",
                            __FILE__, __LINE__, __func__);
-                }
 
                 tmp_len += written;
                 tmp[tmp_len] = '\0';
             }
         } else {
-            /* TODO: An error of sorts. Deal with it */
+            /* An error of sorts. Deal with it */
+            do_log(LL_DEBUG, "Error of some kind: wget_wchar() returned %d in %s:%d:%s",
+                  get_ret, __FILE__, __LINE__, __func__);
         }
 
         date_ret = match_date(tmp, tm);
@@ -343,7 +345,8 @@ int ui_get_string (WINDOW *win, const int row, const int col,
                     *size *= 2;
                     tmp = realloc(tmp, *size);
                     if (tmp==NULL) {
-                        fprintf(stderr, "Failed to allocate memory\n");
+                        do_log(LL_ERROR, "Failed to allocate memory in %s:%d:%s",
+                              __FILE__, __LINE__, __func__);
                         return 0;
                     }
                     str = &tmp;
@@ -351,7 +354,7 @@ int ui_get_string (WINDOW *win, const int row, const int col,
 
                 written = wctomb(tmp+tmp_len, wc);
                 if (written == -1)
-                    wlog(NULL, "Can't transform wide char to multibyte in %s:%d:%s\n",
+                    do_log(LL_WARNING, "Can't transform wide char to multibyte in %s:%d:%s",
                            __FILE__, __LINE__, __func__);
 
                 tmp_len += written;

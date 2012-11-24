@@ -16,7 +16,6 @@ enum LogLevel {
 
 void do_log (enum LogLevel ll, const char *fmt, ...);
 bool log_set_file (const char *filename);
-void wlog (const char *path, const char *fmt, ...);
 
 #endif /* LOG_H */
 

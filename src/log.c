@@ -113,28 +113,3 @@ bool log_set_file (const char *filename)
     return valid;
 }
 
-
-/* TODO: deprecate this */
-void wlog (const char *path, const char *fmt, ...)
-{
-    const char *logfile;
-    va_list ap;
-    FILE *file;
-
-    if (path==NULL)
-        logfile = "ccal.log";
-    else
-        logfile = path;
-
-    file = fopen(logfile, "a");
-
-    if (file==NULL)
-        return;
-
-    va_start (ap, fmt);
-    vfprintf (file, fmt, ap);
-    va_end (ap);
-
-    fclose(file);
-}
-

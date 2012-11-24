@@ -6,6 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "appt.h"
+#include "log.h"
 #include "strutils.h"
 
 
@@ -56,8 +57,8 @@ int appt_parse_properties (struct appt *appt, char *key, char *value)
             appt->tf->start = malloc(sizeof(struct tm));
         } else {
             /* the save entry is broken, having multiple start times */
-            /* TODO: do something sensible about it. At least report,
-             * should we fail, too? */
+            do_log(LL_WARNING, "Error: appt save entry is broken, appt has"
+                               " multiple start times. (here key='%s' value='%s'", key, value);
         }
 
         if (is_numeric(value)) {
@@ -71,9 +72,9 @@ int appt_parse_properties (struct appt *appt, char *key, char *value)
         if (appt->tf->end == NULL) {
             appt->tf->end = malloc(sizeof(struct tm));
         } else {
-            /* the save entry is broken, having multiple start times */
-            /* TODO: do something sensible about it. At least report,
-             * should we fail, too? */
+            /* the save entry is broken, having multiple end times */
+            do_log(LL_WARNING, "Error: appt save entry is broken, appt has"
+                               " multiple end times. (here key='%s' value='%s'", key, value);
         }
 
         if (is_numeric(value)) {
@@ -84,7 +85,7 @@ int appt_parse_properties (struct appt *appt, char *key, char *value)
             retval = 0;
         }
     } else {
-        fprintf(stderr, "Error parsing calfile: key '%s' isn't a property!\n", key);
+        do_log(LL_WARNING, "Error parsing calfile: key '%s' isn't a property!\n", key);
         retval = 0;
     }
 

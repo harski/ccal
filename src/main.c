@@ -9,9 +9,10 @@
 #include <locale.h>
 
 #include "action.h"
+#include "appt.h"
 #include "cal.h"
 #include "curses_ui.h"
-#include "appt.h"
+#include "log.h"
 #include "settings.h"
 
 
@@ -30,12 +31,12 @@ int main(int argc, char *argv[])
     char set_file[128];
 
     if (set==NULL) {
-        fprintf(stderr, "Initializing settings failed. Exiting...");
+        do_log(LL_ERROR, "%s", "Initializing settings failed. Exiting...");
         return 1;
     }
 
     if (cal==NULL) {
-        fprintf(stderr, "Initializing calendar failed. Exiting...");
+        do_log(LL_ERROR, "%s", "Initializing calendar failed. Exiting...");
         return 1;
     }
 
@@ -71,7 +72,7 @@ int main(int argc, char *argv[])
             break;
 
         default:
-            fprintf(stderr, "Option '%s' is not recognized!\nQuitting...\n", optarg);
+            do_log(LL_ERROR, "Option '%s' is not recognized!\nQuitting...\n", optarg);
             exit(1);
         }
     }
