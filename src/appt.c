@@ -65,7 +65,7 @@ int appt_parse_properties (struct appt *appt, char *key, char *value)
             time_t t = (time_t) atoi(value);
             localtime_r(&t, appt->tf->start);
         } else {
-            /* TODO: again, report error */
+            do_log(LL_WARNING, "%s", "Appt start time is not numeric");
             retval = 0;
         }
     } else if (!strcmp("end", key)) {
@@ -81,7 +81,7 @@ int appt_parse_properties (struct appt *appt, char *key, char *value)
             time_t t = (time_t) atoi(value);
             localtime_r(&t, appt->tf->end);
         } else {
-            /* TODO: again, report error */
+            do_log(LL_WARNING, "%s", "Appt end time is not numeric");
             retval = 0;
         }
     } else {
