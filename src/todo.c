@@ -64,12 +64,12 @@ int todo_parse_properties (struct todo *todo, char *key, char *value)
             todo->deadline = malloc(sizeof(struct tm));
             localtime_r(&t, todo->deadline);
         } else {
-            /* TODO: report error */
+            /* report error */
+            do_log(LL_ERROR, "'%s' is not numeric!",
+                   value);
             retval = 0;
         }
     } else if (!strcmp("scheduled", key)) {
-        /* TODO: continue here. The split of times can be done with the
-         * same function that already splits the keys and values */
         char start[32];
         char end[32];
         str_to_key_value_pairs(value, ':', start, 32, end, 32);
@@ -83,8 +83,9 @@ int todo_parse_properties (struct todo *todo, char *key, char *value)
                 tmp = (time_t) atoi(end);
                 localtime_r(&tmp, tf->end);
         } else {
-            /* TODO: Report error */
             /* Value is empty or not numeric */
+            do_log(LL_ERROR, "Value of key '%s' is not numeric",
+                   key);
             retval = 0;
         }
     } else {
