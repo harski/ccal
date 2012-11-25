@@ -15,7 +15,7 @@ static enum LogLevel _log_level = LL_WARNING;
 //static FILE * _log_handle;
 
 
-inline const char * _get_ll_str(enum LogLevel ll)
+static inline const char * _get_ll_str(enum LogLevel ll)
 {
     const char *str;
 
