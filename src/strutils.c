@@ -3,6 +3,7 @@
 
 #define _XOPEN_SOURCE
 
+#include <limits.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,6 +11,20 @@
 #include "strutils.h"
 
 #define WS "\t\n "
+
+
+
+bool is_utf8_cont_byte (char c)
+{
+    /* Check if byte starts with 10 */
+    /* 1000 0000
+     * 0100 0000 */
+    if ((c & (1<<(CHAR_BIT-1))) && !(c & (1<<(CHAR_BIT-2))))
+        return true;
+    else
+        return false;
+}
+
 
 bool is_numeric (const char *str)
 {
@@ -148,5 +163,21 @@ char * tmtostr (const struct tm *tm, char *str, const size_t size)
 {
     strftime(str, size, "%A %Y-%m-%d %H:%M", tm);
     return str;
+}
+
+
+size_t utf8_char_size(const char *c)
+{
+    size_t size = 0;
+    unsigned char comp = 1<<(CHAR_BIT-1);
+
+    if (!is_utf8_cont_byte(c[0])) {
+        while (c[size] & comp) {
+            ++size;
+            comp >> 1;
+        }
+    }
+
+    return size;
 }
 

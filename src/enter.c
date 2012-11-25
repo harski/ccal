@@ -17,6 +17,28 @@
 #define PROMPT_CHAR ':'
 
 
+/* To handle utf8 strings. Returns whether str got edited */
+static inline int handle_backspace(char *str, size_t *nul_pos)
+{
+    int del_count = 0;
+
+    if (*nul_pos != 0) {
+        *nul_pos -= 1;
+        ++del_count;
+
+        while (is_utf8_cont_byte(str[*nul_pos])) {
+
+            *nul_pos -= 1;
+            ++del_count;
+        }
+
+        str[*nul_pos] = '\0';
+    }
+
+    return del_count;
+}
+
+
 static int wget_wchar (WINDOW *win, wchar_t *c)
 {
     int get_ret;
@@ -219,7 +241,7 @@ int ui_get_date (WINDOW *win, const int row, const int col,
                  const char *prompt, struct tm *tm)
 {
     size_t tmp_size = 128;
-    int tmp_len = 0;
+    size_t tmp_len = 0;
     char * tmp = malloc(tmp_size);
     wchar_t wc;
     int get_ret;
@@ -241,20 +263,18 @@ int ui_get_date (WINDOW *win, const int row, const int col,
 
     while (read) {
         get_ret = wget_wchar(win, &wc);
+
         if (!get_ret) {
             if (wc==CTRL('D') || wc=='\n') {
                 if (date_ret)
                     read = false;
                 continue;
             } else if (wc==127 || wc==KEY_DC || wc==KEY_BACKSPACE) {
-                if (characters==0)
+                if (handle_backspace(tmp, &tmp_len))
+                    --characters;
+                else
+                    /* no need to draw the input line again */
                     continue;
-
-                --characters;
-
-                /* TODO: Fix handling multi-byte characters:
-                 * more than one char may need to be deleted */
-                tmp[--tmp_len] = '\0';
             } else {
                 /* normal character */
                 int written;
@@ -285,7 +305,7 @@ int ui_get_date (WINDOW *win, const int row, const int col,
         }
         mvwprintw(win, row, col, "%s%c %s  => %s", prompt, PROMPT_CHAR, tmp, time_str);
         wclrtoeol(win);
-        wmove(win, row, prompt_len + 2 + string_length(tmp));
+        wmove(win, row, col + prompt_len + 2 + string_length(tmp));
         wrefresh(win);
     }
 
@@ -328,14 +348,11 @@ int ui_get_string (WINDOW *win, const int row, const int col,
             if (wc==CTRL('D') || wc=='\n') {
                 break;
             } else if (wc==127 || wc==KEY_DC || wc==KEY_BACKSPACE) {
-                if (characters==0)
+                if (handle_backspace(tmp, &tmp_len))
+                    --characters;
+                else
+                    /* no need to draw the input line again */
                     continue;
-
-                --characters;
-
-                /* TODO: Fix handling multi-byte characters:
-                 * more than one char may need to be deleted */
-                tmp[--tmp_len] = '\0';
             } else {
                 /* normal character */
                 ++characters;
