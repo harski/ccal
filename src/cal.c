@@ -131,7 +131,7 @@ int load_cal_file (struct cal *cal, const char *filepath)
                 appt = NULL;
             } else {
                 /* The parsed appt entry does not validate: dump it */
-                do_log(LL_WARNING, "%s", "Invalid appt in savefile");
+                do_log(LL_WARNING, "Invalid appt in savefile, near line %d", line);
                 success = 0;
             }
         } else if (appt_open &&
