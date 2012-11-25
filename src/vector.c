@@ -71,18 +71,6 @@ struct vector * vector_init_size (size_t size)
 }
 
 
-struct vector * vector_create ()
-{
-    return vector_init_size(VECTOR_DEFAULT_SIZE);
-}
-
-
-struct vector * vector_create_size (size_t size)
-{
-    return vector_init_size(size);
-}
-
-
 void vector_destroy (struct vector * v)
 {
     free(v->list);
@@ -109,7 +97,6 @@ void * vector_remove (struct vector *v, unsigned int index)
 
     tmp = v->list[index];
 
-    /* TODO: more efficent with memmove */
     for (i = index; i < v->elements-1; ++i)
         v->list[i] = v->list[i+1];
 

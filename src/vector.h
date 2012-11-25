@@ -68,16 +68,6 @@ struct vector * vector_init ();
  * Returns the allocated, initialized vector, or if an error occured NULL.. */
 struct vector * vector_init_size (size_t size);
 
-/* Initialize a vector with an initial capacity of VECTOR_DEFAULT_SIZE.
- * Returns the allocated, initialized vector, or if an error occured NULL..
- * NOTE: THIS FUNCTION IS DEPRECATED. USE vector_init() INSTEAD. */
-DEPRECATED(struct vector * vector_create ());
-
-/* Initialize a vector with an initial capacity defined with size.
- * Returns the allocated, initialized vector, or if an error occured NULL..
- * NOTE: THIS FUNCTION IS DEPRECATED. USE vector_init_size() INSTEAD. */
-DEPRECATED(struct vector * vector_create_size (size_t size));
-
 /* Free vector v. v must be manually emptied first, this function doesn't
  * free the elements that might still be remaining in the vector. */
 void vector_destroy (struct vector *v);
