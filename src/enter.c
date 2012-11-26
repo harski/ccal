@@ -217,8 +217,10 @@ bool ui_get_yes_no (WINDOW *win, const int row, const int col, const char *promp
     else if (no==def)
         no -=32;
 
-    mvwprintw(win, row, col, "%s, ", prompt);
-    wprintw(win, "%c/%c?", yes, no);
+    curs_set(1);
+
+    mvwprintw(win, row, col, "%s ", prompt);
+    wprintw(win, "[%c/%c] ", yes, no);
 
     while (loop) {
         get_ret = wget_wchar(win, &wc);
@@ -232,6 +234,8 @@ bool ui_get_yes_no (WINDOW *win, const int row, const int col, const char *promp
             }
         }
     }
+
+    curs_set(0);
 
     return ret;
 }

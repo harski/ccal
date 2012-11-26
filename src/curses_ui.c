@@ -36,7 +36,6 @@ static void destroy_windows(WINDOW **wins);
 static WINDOW **init_windows();
 static inline void next_day (struct tm *tm);
 static inline void prev_day (struct tm *tm);
-static bool prompt_for_save (WINDOW *win, const struct settings *set);
 static bool same_day (const struct tm *t1, const struct tm *t2);
 static int ui_add_appt (WINDOW **win, struct settings *set,
                   struct cal *cal);
@@ -114,34 +113,6 @@ static void clear_all_wins(WINDOW **wins)
 }
 
 
-bool prompt_for_save (WINDOW *win, const struct settings *set)
-{
-    int input;
-    bool input_ok = false;
-    bool ans;
-
-    werase(win);
-
-    mvwprintw(win, 0, 0, "Save changes to cal? [Y/n]: ");
-    wrefresh(win);
-
-    do {
-        input = wgetch(win);
-        if (input < 128) {
-            if (input=='n') {
-                input_ok = true;
-                ans = false;
-            } else if (input=='y' || input=='Y' || input=='\n') {
-                input_ok = true;
-                ans = true;
-            }
-        }
-    } while (!input_ok);
-
-    return ans;
-}
-
-
 static bool same_day (const struct tm *t1, const struct tm *t2)
 {
     if (t1->tm_year == t2->tm_year && t1->tm_mon == t2->tm_mon &&
@@ -191,7 +162,6 @@ static void print_appt (WINDOW *win, struct appt *appt)
 }
 
 
-/* TODO: Add means to abort in the middle of entering header/times */
 static int ui_add_appt (WINDOW **wins, struct settings *set,
                         struct cal *cal)
 {
@@ -261,7 +231,7 @@ static int ui_add_appt (WINDOW **wins, struct settings *set,
             loop = false;
             if (!saved) {
                 /* Ask if entry is to be saved */
-                if (ui_get_yes_no(wins[W_INPUT_BAR], 0, 0, "Save this entry", 'y')) {
+                if (ui_get_yes_no(wins[W_INPUT_BAR], 0, 0, "Save this entry?", 'y')) {
                     vector_add(cal->appts, appt);
                     set->cal_changed = true;
                     appt_added = 1;
@@ -498,7 +468,7 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
             ui_show_dump(wins, set, cal);
             break;
         case 'q':
-            if (set->cal_changed && prompt_for_save(wins[W_INPUT_BAR], set)) {
+            if (set->cal_changed && ui_get_yes_no(wins[W_INPUT_BAR], 0, 0, "Save changes to cal?", 'y')) {
                 cal_save(cal, set->cal_file);
                 set->cal_changed = false;
             }
