@@ -169,8 +169,6 @@ static int ui_add_appt (WINDOW **wins, struct settings *set,
     size_t tmp_size = 128;
     char *tmp = malloc(tmp_size);
     int appt_added;
-    int line = 2;
-    bool date_ok;
     bool loop;
     bool saved = false;
     int input_status;

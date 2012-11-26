@@ -96,17 +96,19 @@ void removequotes (char *str)
 int str_to_key_value_pairs (const char *str, const char separator, char *key,
                             size_t keylen, char *value, size_t valuelen)
 {
-    int separator_index = -1;
+    size_t separator_index;
     int str_len = strlen(str);
+    bool found = false;
 
     for (int i=0; str_len; ++i) {
         if (str[i] == separator) {
             separator_index = i;
+            found = true;
             break;
         }
     }
 
-    if (separator_index == -1)
+    if (!found)
         return 0;
 
     /* Ensure that key fits */

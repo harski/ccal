@@ -241,9 +241,8 @@ bool ui_get_yes_no (WINDOW *win, const int row, const int col, const char *promp
 }
 
 
-/* TODO: return 0 if cancelled */
-/* TODO: make cancelling possible */
-/* TODO: make sure no more tha tmp_size bytes are fetched. It has to cut it */
+/* Returns 0 if cancelled */
+/* TODO: make sure no more than tmp_size bytes are fetched. It has to cut it */
 int ui_get_date (WINDOW *win, const int row, const int col,
                  const char *prompt, struct tm *tm)
 {
@@ -396,7 +395,8 @@ int ui_get_string (WINDOW *win, const int row, const int col,
                 tmp[tmp_len] = '\0';
             }
         } else {
-            /* TODO: An error of sorts. Deal with it */
+            /* An error of sorts. Deal with it */
+            do_log(LL_ERROR, "Error while getting input character in %s:%d:%s", __FILE__, __LINE__, __func__);
         }
 
         /* Print the current situation to screen */
