@@ -1,6 +1,8 @@
 /* Copyright (C) 2012 Tuomo Hartikainen <hartitu@gmail.com>
  * Licensed under GPLv3, see LICENSE for more information. */
 
+#define _XOPEN_SOURCE
+
 #include "log.h"
 #include "strutils.h"
 #include "todo.h"
