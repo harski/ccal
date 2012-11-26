@@ -191,7 +191,6 @@ static void print_appt (WINDOW *win, struct appt *appt)
 }
 
 
-/* TODO: tss and tse are ugly, fix it */
 /* TODO: Add means to abort in the middle of entering header/times */
 static int ui_add_appt (WINDOW **wins, struct settings *set,
                         struct cal *cal)
@@ -204,6 +203,10 @@ static int ui_add_appt (WINDOW **wins, struct settings *set,
     bool date_ok;
     bool loop;
     bool saved = false;
+    int input_status;
+    struct tm *tss = malloc(sizeof(struct tm));;
+    struct tm *tse = malloc(sizeof(struct tm));;
+
 
     update_top_bar(wins[W_TOP_BAR], set, "q:Return");
     werase(wins[W_CONTENT]);
@@ -212,7 +215,11 @@ static int ui_add_appt (WINDOW **wins, struct settings *set,
 
     print_appt(wins[W_CONTENT], appt);
 
-    ui_get_string(wins[W_INPUT_BAR], 0, 0, "Header", &tmp, &tmp_size);
+    input_status = ui_get_string(wins[W_INPUT_BAR], 0, 0, "Header", &tmp, &tmp_size);
+
+    if (!input_status)
+        goto exit_cancel;
+
     appt->header = malloc(1+strlen(tmp));
     strcpy(appt->header, tmp);
     tmp[0] = '\0';
@@ -220,37 +227,30 @@ static int ui_add_appt (WINDOW **wins, struct settings *set,
     wclear(wins[W_INPUT_BAR]);
     print_appt(wins[W_CONTENT], appt);
 
-    date_ok = false;
-    struct tm *tss = malloc(sizeof(struct tm));;
-    while (!date_ok) {
-        int date_ret = ui_get_date(wins[W_INPUT_BAR], 0, 0, "start time", tss);
-        if (date_ret) {
-            /* TODO: this needs to be _copied_ */
-            appt->tf->start = tss;
-            date_ok = true;
-        }
-    }
+    /* get start time */
+    input_status = ui_get_date(wins[W_INPUT_BAR], 0, 0, "start time", tss);
+    if (!input_status)
+        goto exit_cancel;
+
+    appt->tf->start = tss;
 
     wclear(wins[W_INPUT_BAR]);
     print_appt(wins[W_CONTENT], appt);
 
-    date_ok = false;
-    struct tm *tse = malloc(sizeof(struct tm));;
-    while (!date_ok) {
-        int date_ret = ui_get_date(wins[W_INPUT_BAR], 0, 0, "end time", tse);
-        if (date_ret) {
-            /* TODO: this needs to be _copied_ */
-            appt->tf->end = tse;
-            date_ok = true;
-        }
-    }
+    /* get end time */
+    input_status = ui_get_date(wins[W_INPUT_BAR], 0, 0, "end time", tse);
+    if (!input_status)
+        goto exit_cancel;
+
+    appt->tf->end = tse;
 
     wclear(wins[W_INPUT_BAR]);
     print_appt(wins[W_CONTENT], appt);
 
     wclear(wins[W_INPUT_BAR]);
 
-    /* TODO: main loop */
+    /* Main loop */
+    /* TODO: Edit other, non-mandatory properties */
     loop = true;
     while (loop) {
         /* Update appt information */
@@ -280,6 +280,16 @@ static int ui_add_appt (WINDOW **wins, struct settings *set,
     free(tmp);
 
     return appt_added;
+
+exit_cancel:
+    free(tmp);
+    free(tss);
+    free(tse);
+    appt->tf->start = NULL;
+    appt->tf->end = NULL;
+    appt->header = NULL;
+
+    return 0;
 }
 
 

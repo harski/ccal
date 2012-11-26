@@ -237,6 +237,9 @@ bool ui_get_yes_no (WINDOW *win, const int row, const int col, const char *promp
 }
 
 
+/* TODO: return 0 if cancelled */
+/* TODO: make cancelling possible */
+/* TODO: make sure no more tha tmp_size bytes are fetched. It has to cut it */
 int ui_get_date (WINDOW *win, const int row, const int col,
                  const char *prompt, struct tm *tm)
 {
@@ -248,9 +251,8 @@ int ui_get_date (WINDOW *win, const int row, const int col,
     bool read = true;
     int return_val = 1;
     int date_ret = 0;
-    int characters = 0;
     char time_str[128];
-    int prompt_len = strlen(prompt);
+    const size_t prompt_len = strlen(prompt);
 
     tm->tm_hour = 0;
     tm->tm_min = 0;
@@ -266,20 +268,23 @@ int ui_get_date (WINDOW *win, const int row, const int col,
 
         if (!get_ret) {
             if (wc==CTRL('D') || wc=='\n') {
+                /* End character. If valid date, exit */
                 if (date_ret)
                     read = false;
                 continue;
+            } else if (wc==CTRL('G')) {
+                /* Cancel input */
+                read = false;
+                return_val = 0;
+                continue;
             } else if (wc==127 || wc==KEY_DC || wc==KEY_BACKSPACE) {
-                if (handle_backspace(tmp, &tmp_len))
-                    --characters;
-                else
-                    /* no need to draw the input line again */
+                /* no need to draw the input line again if nothing happened */
+                if (!handle_backspace(tmp, &tmp_len))
                     continue;
             } else {
                 /* normal character */
                 int written;
 
-                ++characters;
                 written = wctomb(tmp+tmp_len, wc);
 
                 if (written == -1)
@@ -326,6 +331,7 @@ int ui_get_string (WINDOW *win, const int row, const int col,
     int get_ret;
     int written;
     int characters = 0;
+    int return_val = 1;
 
     if (str==NULL) {
         *size = STR_INIT_SIZE;
@@ -346,6 +352,14 @@ int ui_get_string (WINDOW *win, const int row, const int col,
 
         if (!get_ret) {
             if (wc==CTRL('D') || wc=='\n') {
+                /* If input is non-empty, return */
+                if (string_length(tmp))
+                    break;
+                else
+                    continue;
+            } else if (wc==CTRL('G')) {
+                /* Cancel input */
+                return_val = 0;
                 break;
             } else if (wc==127 || wc==KEY_DC || wc==KEY_BACKSPACE) {
                 if (handle_backspace(tmp, &tmp_len))
@@ -390,6 +404,6 @@ int ui_get_string (WINDOW *win, const int row, const int col,
     curs_set(0);
     wrefresh(win);
 
-    return 1;
+    return return_val;
 }
 
