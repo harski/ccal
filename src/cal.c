@@ -89,10 +89,8 @@ int load_cal_file (struct cal *cal, const char *filepath)
 
     file = fopen(filepath, "r");
 
-    if (file==NULL) {
-        do_log(LL_ERROR, "Calendar file '%s' not found or cannot be opened", filepath);
+    if (file==NULL)
         return 0;
-    }
 
     if (buffer==NULL) {
         do_log(LL_ERROR, "Malloc failed in %s:%s", __FILE__, __func__);
