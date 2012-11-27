@@ -158,66 +158,121 @@ static void print_appt (WINDOW *win, struct appt *appt)
 }
 
 
+static int get_header(WINDOW *win, struct appt * appt)
+{
+    /* if header is not already allocated, allocate a new stirng and
+     * use that. If it is allocated, edit the existing one. */
+    size_t size;
+    char *tmp;
+    int success;
+    char **str;
+
+    if (appt->header != NULL) {
+        tmp = appt->header;
+        size = strlen(tmp) + 1;
+        appt->header = NULL;
+    } else {
+        size = 64;
+        tmp = malloc(size);
+
+        if (tmp==NULL)
+            return 0;
+    }
+
+    str = &tmp;
+    success = ui_get_string(win, 0, 0, "Header", str, &size);
+    tmp = *str;
+
+    if (success) {
+        /* "Compact" the string */
+        appt->header = malloc(strlen(tmp) + 1);
+        strcpy(appt->header, tmp);
+    }
+
+    free(tmp);
+
+    return success;
+}
+
+
+static int get_time(WINDOW *win, struct appt *appt, enum ApptField af)
+{
+    int success;
+    size_t size = 32;
+    char *str = malloc(size);
+    struct tm *tm = malloc(sizeof(struct tm));
+
+    if (str==NULL || tm==NULL) {
+        free(str);
+        free(tm);
+        return 0;
+    }
+
+    if (af==APPT_START_TIME) {
+        /* clear the current time */
+        if (appt->tf->start != NULL) {
+            free(appt->tf->start);
+            appt->tf->start = NULL;
+        }
+
+        /* Get the new time */
+        success = ui_get_date(win, 0, 0, "Start time", tm);
+
+        if (success)
+            appt->tf->start = tm;
+        else
+            free(tm);
+
+    } else if (af==APPT_END_TIME) {
+        /* clear the current time */
+        if (appt->tf->end != NULL) {
+            free(appt->tf->end);
+            appt->tf->end = NULL;
+        }
+
+        /* Get the new time */
+        success = ui_get_date(win, 0, 0, "End time", tm);
+
+        if (success)
+            appt->tf->end = tm;
+        else
+            free(tm);
+    }
+
+    return success;
+}
+
+
+/* TODO: check that appt is valid before adding */
 static int ui_add_appt (WINDOW **wins, struct settings *set,
                         struct cal *cal)
 {
     struct appt * appt = appt_init();
-    size_t tmp_size = 128;
-    char *tmp = malloc(tmp_size);
     int appt_added;
     bool loop;
     bool saved = false;
-    int input_status;
-    struct tm *tss = malloc(sizeof(struct tm));;
-    struct tm *tse = malloc(sizeof(struct tm));;
 
-
-    update_top_bar(wins[W_TOP_BAR], set, "q:Return");
-    werase(wins[W_CONTENT]);
-    wclear(wins[W_INFO_BAR]);
-    wclear(wins[W_INPUT_BAR]);
-
+    clear_all_wins(wins);
+    update_top_bar(wins[W_TOP_BAR], set, "q:Return  h:Edit header  s:Edit start time  e:Edit end time");
     print_appt(wins[W_CONTENT], appt);
 
-    input_status = ui_get_string(wins[W_INPUT_BAR], 0, 0, "Header", &tmp, &tmp_size);
-
-    if (!input_status)
+    if(!get_header(wins[W_INPUT_BAR], appt))
         goto exit_cancel;
-
-    appt->header = malloc(1+strlen(tmp));
-    strcpy(appt->header, tmp);
-    tmp[0] = '\0';
-
-    wclear(wins[W_INPUT_BAR]);
     print_appt(wins[W_CONTENT], appt);
 
-    /* get start time */
-    input_status = ui_get_date(wins[W_INPUT_BAR], 0, 0, "start time", tss);
-    if (!input_status)
+    if(!get_time(wins[W_INPUT_BAR], appt, APPT_START_TIME))
         goto exit_cancel;
-
-    appt->tf->start = tss;
-
-    wclear(wins[W_INPUT_BAR]);
     print_appt(wins[W_CONTENT], appt);
 
-    /* get end time */
-    input_status = ui_get_date(wins[W_INPUT_BAR], 0, 0, "end time", tse);
-    if (!input_status)
+    if(!get_time(wins[W_INPUT_BAR], appt, APPT_END_TIME))
         goto exit_cancel;
-
-    appt->tf->end = tse;
-
-    wclear(wins[W_INPUT_BAR]);
-    print_appt(wins[W_CONTENT], appt);
-
-    wclear(wins[W_INPUT_BAR]);
 
     /* Main loop */
     /* TODO: Edit other, non-mandatory properties */
     loop = true;
     while (loop) {
         /* Update appt information */
+        wclear(wins[W_CONTENT]);
         print_appt(wins[W_CONTENT], appt);
 
         switch (wgetch(wins[W_INPUT_BAR])) {
@@ -236,23 +291,27 @@ static int ui_add_appt (WINDOW **wins, struct settings *set,
             }
             break;
 
+        case 'h':
+            get_header(wins[W_INPUT_BAR], appt);
+            break;
+
+        case 's':
+            get_time(wins[W_INPUT_BAR], appt, APPT_START_TIME);
+            break;
+
+        case 'e':
+            get_time(wins[W_INPUT_BAR], appt, APPT_END_TIME);
+            break;
+
         default:
             break;
         }
     }
 
-    free(tmp);
-
     return appt_added;
 
 exit_cancel:
-    free(tmp);
-    free(tss);
-    free(tse);
-    appt->tf->start = NULL;
-    appt->tf->end = NULL;
-    appt->header = NULL;
-
+    appt_destroy(appt);
     return 0;
 }
 
