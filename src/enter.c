@@ -387,7 +387,7 @@ int ui_edit_string (WINDOW *win, const int row, const int col,
                 /* Handle normal character */
 
                 /* Ensure tmp has at least 5 bytes (utf-char + NUL) left! */
-                if (*size - tmp_len < MB_CUR_MAX) {
+                if (*size - tmp_len <= MB_CUR_MAX) {
                     *size *= 2;
                     tmp = realloc(tmp, *size);
                     if (tmp==NULL) {
@@ -395,8 +395,9 @@ int ui_edit_string (WINDOW *win, const int row, const int col,
                               __FILE__, __LINE__, __func__);
                         return_val = 0;
                         break;
+                    } else {
+                        *str = tmp;
                     }
-                    str = &tmp;
                 }
 
                 written = wctomb(tmp+tmp_len, wc);
