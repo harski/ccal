@@ -318,6 +318,8 @@ int ui_get_date (WINDOW *win, const int row, const int col,
     }
 
     curs_set(0);
+    wmove(win, row, col);
+    wclrtoeol(win);
     wrefresh(win);
     free(tmp);
 
@@ -337,7 +339,7 @@ int ui_get_string (WINDOW *win, const int row, const int col,
 
         if (*str==NULL) {
             *size = 0;
-            return NULL;
+            return 0;
         }
     }
 
@@ -353,7 +355,7 @@ int ui_edit_string (WINDOW *win, const int row, const int col,
 {
     char *tmp = *str;
     wchar_t wc;
-    size_t tmp_len = strlen(tmp);;
+    size_t tmp_len = strlen(tmp);
     int get_ret;
     int written;
     int return_val = 1;
@@ -412,6 +414,8 @@ int ui_edit_string (WINDOW *win, const int row, const int col,
     }
 
     curs_set(0);
+    wmove(win, row, col);
+    wclrtoeol(win);
     wrefresh(win);
 
     return return_val;
