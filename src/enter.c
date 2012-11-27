@@ -325,54 +325,64 @@ int ui_get_date (WINDOW *win, const int row, const int col,
 }
 
 
+/* This ensures the "empty" string is NUL-terminated, and prepares for
+ * the rare case *str==NULL */
 int ui_get_string (WINDOW *win, const int row, const int col,
                    const char *prompt, char **str, size_t *size)
 {
-    char *tmp;
-    wchar_t wc;
-    size_t tmp_len = 0;
-    int get_ret;
-    int written;
-    int characters = 0;
-    int return_val = 1;
-
-    if (str==NULL) {
+    /* If *str is not allocated, allocate it */
+    if (*str==NULL || *size==0) {
         *size = STR_INIT_SIZE;
-        tmp = malloc(STR_INIT_SIZE);
-        str = &tmp;
-    } else {
-        tmp = *str;
+        *str = malloc(STR_INIT_SIZE);
+
+        if (*str==NULL) {
+            *size = 0;
+            return NULL;
+        }
     }
 
-    wmove(win, row, col);
-    if (prompt!=NULL)
-        wprintw(win, "%s%c ", prompt, PROMPT_CHAR);
+    (*str)[0] = '\0';
+
+    return ui_edit_string (win, row, col, prompt, str, size);
+}
+
+
+/* *str must be properly allocated and NUL terminated */
+int ui_edit_string (WINDOW *win, const int row, const int col,
+                   const char *prompt, char **str, size_t *size)
+{
+    char *tmp = *str;
+    wchar_t wc;
+    size_t tmp_len = strlen(tmp);;
+    int get_ret;
+    int written;
+    int return_val = 1;
 
     curs_set(1);
 
     while (true) {
+        /* Print the current situation to screen */
+        mvwprintw(win, row, col, "%s%c %s", prompt, PROMPT_CHAR, tmp);
+        wclrtoeol(win);
+        wrefresh(win);
+
+        /* Get next character */
         get_ret = wget_wchar(win, &wc);
 
+        /* Handle input */
         if (!get_ret) {
             if (wc==CTRL('D') || wc=='\n') {
-                /* If input is non-empty, return */
+                /* If input is non-empty, return the result */
                 if (string_length(tmp))
                     break;
-                else
-                    continue;
             } else if (wc==CTRL('G')) {
                 /* Cancel input */
                 return_val = 0;
                 break;
             } else if (wc==127 || wc==KEY_DC || wc==KEY_BACKSPACE) {
-                if (handle_backspace(tmp, &tmp_len))
-                    --characters;
-                else
-                    /* no need to draw the input line again */
-                    continue;
+                handle_backspace(tmp, &tmp_len);
             } else {
-                /* normal character */
-                ++characters;
+                /* Handle normal character */
 
                 /* Ensure tmp has at least 5 bytes (utf-char + NUL) left! */
                 if (*size - tmp_len < MB_CUR_MAX) {
@@ -381,7 +391,8 @@ int ui_get_string (WINDOW *win, const int row, const int col,
                     if (tmp==NULL) {
                         do_log(LL_ERROR, "Failed to allocate memory in %s:%d:%s",
                               __FILE__, __LINE__, __func__);
-                        return 0;
+                        return_val = 0;
+                        break;
                     }
                     str = &tmp;
                 }
@@ -398,11 +409,6 @@ int ui_get_string (WINDOW *win, const int row, const int col,
             /* An error of sorts. Deal with it */
             do_log(LL_ERROR, "Error while getting input character in %s:%d:%s", __FILE__, __LINE__, __func__);
         }
-
-        /* Print the current situation to screen */
-        mvwprintw(win, row, col, "%s%c %s", prompt, PROMPT_CHAR, tmp);
-        wclrtoeol(win);
-        wrefresh(win);
     }
 
     curs_set(0);
