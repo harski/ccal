@@ -11,7 +11,7 @@
 #include <stdio.h>
 
 
-enum {
+enum ApptField {
     APPT_HEADER,
     APPT_START_TIME,
     APPT_END_TIME,
