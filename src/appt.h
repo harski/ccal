@@ -10,6 +10,15 @@
 #include <time.h>
 #include <stdio.h>
 
+
+enum {
+    APPT_HEADER,
+    APPT_START_TIME,
+    APPT_END_TIME,
+    APPT_CATEGORY,
+    APPT_DESCRIPTION
+};
+
 struct appt {
     char *header;
     char *description;

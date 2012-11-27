@@ -127,35 +127,31 @@ static void print_appt (WINDOW *win, struct appt *appt)
 {
     const int start_col = 2;
     const int start_content = 15;
-    int line = 2;
+    const int start_line = 2;
     char str[128];
 
-    mvwprintw(win, line, start_col, "Header: ");
+    mvwprintw(win, start_line+APPT_HEADER, start_col, "Header: ");
     if (appt->header != NULL)
-        mvwprintw(win, line, start_content, "%s", appt->header);
-    ++line;
+        mvwprintw(win, start_line+APPT_HEADER, start_content, "%s", appt->header);
 
-    mvwprintw(win, line, start_col, "Description: ");
+    mvwprintw(win, start_line+APPT_DESCRIPTION, start_col, "Description: ");
     if (appt->description != NULL)
-        mvwprintw(win, line, start_content, "%s", appt->description);
-    ++line;
+        mvwprintw(win, start_line+APPT_DESCRIPTION, start_content, "%s", appt->description);
 
-    mvwprintw(win, line, start_col, "Category: ");
+    mvwprintw(win, start_line+APPT_CATEGORY, start_col, "Category: ");
     if (appt->category != NULL)
-        mvwprintw(win, line, start_content, "%s", appt->category);
-    ++line;
+        mvwprintw(win, start_line+APPT_CATEGORY, start_content, "%s", appt->category);
 
-    mvwprintw(win, line, start_col, "Start time: ");
+    mvwprintw(win, start_line+APPT_START_TIME, start_col, "Start time: ");
     if (appt->tf->start != NULL) {
         tmtostr(appt->tf->start, str, 128);
-        mvwprintw(win, line, start_content, "%s", str);
+        mvwprintw(win, start_line+APPT_START_TIME, start_content, "%s", str);
     }
-    ++line;
 
-    mvwprintw(win, line, start_col, "End time: ");
+    mvwprintw(win, start_line+APPT_END_TIME, start_col, "End time: ");
     if (appt->tf->end != NULL) {
         tmtostr(appt->tf->end, str, 128);
-        mvwprintw(win, line, start_content, "%s", str);
+        mvwprintw(win, start_line+APPT_END_TIME, start_content, "%s", str);
     }
 
     wrefresh(win);
