@@ -374,9 +374,7 @@ int ui_edit_string (WINDOW *win, const int row, const int col,
         /* Handle input */
         if (!get_ret) {
             if (wc==CTRL('D') || wc=='\n') {
-                /* If input is non-empty, return the result */
-                if (string_length(tmp))
-                    break;
+                break;
             } else if (wc==CTRL('G')) {
                 /* Cancel input */
                 return_val = 0;
