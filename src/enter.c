@@ -203,7 +203,8 @@ static int match_date (const char *str, struct tm *tm)
 }
 
 
-bool ui_get_yes_no (WINDOW *win, const int row, const int col, const char *prompt, const char def)
+bool ui_get_yes_no (WINDOW *win, const int row, const int col,
+                    const char *prompt, const char def)
 {
     int get_ret;
     bool loop = true;
@@ -236,6 +237,9 @@ bool ui_get_yes_no (WINDOW *win, const int row, const int col, const char *promp
     }
 
     curs_set(0);
+
+    wmove(win, row, col);
+    wclrtoeol(win);
 
     return ret;
 }
