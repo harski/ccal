@@ -158,88 +158,90 @@ static void print_appt (WINDOW *win, struct appt *appt)
 }
 
 
-static int get_header(WINDOW *win, struct appt * appt)
+static char * get_string(WINDOW *win, char *str, const char *prompt)
 {
     /* if header is not already allocated, allocate a new stirng and
      * use that. If it is allocated, edit the existing one. */
     size_t size;
     char *tmp;
     int success;
-    char **str;
 
-    if (appt->header != NULL) {
-        tmp = appt->header;
-        size = strlen(tmp) + 1;
-        appt->header = NULL;
+    if (str!=NULL && str[0]!='\0') {
+        size = strlen(str)+1;
+        tmp = malloc(size);
+
+        if (tmp==NULL)
+            return str;
+
+        strcpy(tmp, str);
     } else {
         size = 64;
         tmp = malloc(size);
 
         if (tmp==NULL)
-            return 0;
+            return str;
+
+        tmp[0] = '\0';
     }
 
-    str = &tmp;
-    success = ui_get_string(win, 0, 0, "Header", str, &size);
-    tmp = *str;
+    success = ui_get_string(win, 0, 0, prompt, &tmp, &size);
 
     if (success) {
         /* "Compact" the string */
-        appt->header = malloc(strlen(tmp) + 1);
-        strcpy(appt->header, tmp);
+        char *new_tmp = malloc(strlen(tmp) + 1);
+
+        if (new_tmp == NULL)
+            return str;
+
+        strcpy(new_tmp, tmp);
+
+        free(tmp);
+        tmp = new_tmp;
+
+        if (str!=NULL)
+            free(str);
+
+        str = tmp;
     }
 
-    free(tmp);
-
-    return success;
+    return str;
 }
 
 
-static int get_time(WINDOW *win, struct appt *appt, enum ApptField af)
+/* If oldtm is not allocated, it gets allocated, and its address gets
+ * returned. If it is allocated, the new value is assigned to the it.
+ * Returns the address of current struct tm, or NULL on error or cancel */
+static struct tm * get_time(WINDOW *win, struct tm *oldtm, const char *prompt)
 {
-    int success;
     size_t size = 32;
-    char *str = malloc(size);
+    struct tm *ret;
     struct tm *tm = malloc(sizeof(struct tm));
 
-    if (str==NULL || tm==NULL) {
-        free(str);
+    if (tm==NULL) {
+        /* If malloc failed */
         free(tm);
-        return 0;
+        do_log(LL_ERROR, "Malloc fail in %s:%s:%d", __FILE__,
+               __func__, __LINE__);
+        ret = NULL;
+    } else if ((ui_get_date(win, 0, 0, prompt, tm))) {
+        /* if got a valid value from ui_get_date */
+        if (oldtm==NULL) {
+            /* If oldtm wasn't before this function allocated */
+            oldtm = tm;
+            ret = tm;
+        } else {
+            /* oldtm was allocated before this function */
+            *oldtm = *tm;
+            ret = oldtm;
+            free(tm);
+        }
+    } else {
+        /* ui_get_date returned with error or cancel */
+        free(tm);
+        ret = oldtm;
     }
 
-    if (af==APPT_START_TIME) {
-        /* clear the current time */
-        if (appt->tf->start != NULL) {
-            free(appt->tf->start);
-            appt->tf->start = NULL;
-        }
-
-        /* Get the new time */
-        success = ui_get_date(win, 0, 0, "Start time", tm);
-
-        if (success)
-            appt->tf->start = tm;
-        else
-            free(tm);
-
-    } else if (af==APPT_END_TIME) {
-        /* clear the current time */
-        if (appt->tf->end != NULL) {
-            free(appt->tf->end);
-            appt->tf->end = NULL;
-        }
-
-        /* Get the new time */
-        success = ui_get_date(win, 0, 0, "End time", tm);
-
-        if (success)
-            appt->tf->end = tm;
-        else
-            free(tm);
-    }
-
-    return success;
+    return ret;
 }
 
 
@@ -253,22 +255,20 @@ static int ui_add_appt (WINDOW **wins, struct settings *set,
     bool saved = false;
 
     clear_all_wins(wins);
-    update_top_bar(wins[W_TOP_BAR], set, "q:Return  h:Edit header  s:Edit start time  e:Edit end time");
+    update_top_bar(wins[W_TOP_BAR], set, "q:Return  h:Edit header  s:Edit start"
+                                         " time  e:Edit end time  c:Edit category"
+                                         " d:Edit category");
     print_appt(wins[W_CONTENT], appt);
 
-    if(!get_header(wins[W_INPUT_BAR], appt))
-        goto exit_cancel;
+    appt->header = get_string(wins[W_INPUT_BAR], appt->header, "Header");
     print_appt(wins[W_CONTENT], appt);
 
-    if(!get_time(wins[W_INPUT_BAR], appt, APPT_START_TIME))
-        goto exit_cancel;
+    appt->tf->start = get_time(wins[W_INPUT_BAR], appt->tf->start, "Start time");
     print_appt(wins[W_CONTENT], appt);
 
-    if(!get_time(wins[W_INPUT_BAR], appt, APPT_END_TIME))
-        goto exit_cancel;
+    appt->tf->end = get_time(wins[W_INPUT_BAR], appt->tf->end, "End time");
 
     /* Main loop */
-    /* TODO: Edit other, non-mandatory properties */
     loop = true;
     while (loop) {
         /* Update appt information */
@@ -276,31 +276,47 @@ static int ui_add_appt (WINDOW **wins, struct settings *set,
         print_appt(wins[W_CONTENT], appt);
 
         switch (wgetch(wins[W_INPUT_BAR])) {
+        case 'c':
+            appt->category = get_string(wins[W_INPUT_BAR], appt->category, "Category");
+            break;
+
+        case 'd':
+            appt->description = get_string(wins[W_INPUT_BAR], appt->description, "Description");
+            break;
+
+        case 'e':
+            appt->tf->end = get_time(wins[W_INPUT_BAR], appt->tf->end, "End time");
+            break;
+
+        case 'h':
+            appt->header = get_string(wins[W_INPUT_BAR], appt->header, "Header");
+            break;
+
         case 'q':
-            loop = false;
             if (!saved) {
-                /* Ask if entry is to be saved */
-                if (ui_get_yes_no(wins[W_INPUT_BAR], 0, 0, "Save this entry?", 'y')) {
-                    vector_add(cal->appts, appt);
-                    set->cal_changed = true;
-                    appt_added = 1;
-                } else {
-                    appt_added = 0;
-                    appt_destroy(appt);
+                /* Check if appt is valid */
+                if (appt_validate(appt)) {
+                    /* Ask if entry is to be saved */
+                    if (ui_get_yes_no(wins[W_INPUT_BAR], 0, 0, "Save this entry?", 'y')) {
+                        vector_add(cal->appts, appt);
+                        set->cal_changed = true;
+                        appt_added = 1;
+                    } else {
+                        appt_added = 0;
+                        appt_destroy(appt);
+                    }
+
+                    loop = false;
+
+                } else { /* Appt is not valid */
+                    if(ui_get_yes_no(wins[W_INPUT_BAR], 0, 0, "Entry is invalid, discard?", 'n'))
+                        loop = false;
                 }
             }
             break;
 
-        case 'h':
-            get_header(wins[W_INPUT_BAR], appt);
-            break;
-
         case 's':
-            get_time(wins[W_INPUT_BAR], appt, APPT_START_TIME);
-            break;
-
-        case 'e':
-            get_time(wins[W_INPUT_BAR], appt, APPT_END_TIME);
+            appt->tf->start = get_time(wins[W_INPUT_BAR], appt->tf->start, "Start time");
             break;
 
         default:
@@ -309,10 +325,6 @@ static int ui_add_appt (WINDOW **wins, struct settings *set,
     }
 
     return appt_added;
-
-exit_cancel:
-    appt_destroy(appt);
-    return 0;
 }
 
 
