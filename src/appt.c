@@ -152,13 +152,27 @@ void appt_dump (struct appt *appt)
 /* Not const, because mktime edits the struct tm */
 bool appt_validate (struct appt *appt)
 {
-    time_t start, end;
-    start = mktime(appt->tf->start);
-    end = mktime(appt->tf->end);
+    bool valid = true;
 
-    if (appt->header==NULL || end<start)
-        return false;
+    if (appt->header==NULL || appt->header[0] == '\0')
+        valid = false;
 
-    return true;
+    if (appt->tf != NULL) {
+        if (appt->tf->start != NULL && appt->tf->end != NULL) {
+            time_t start, end;
+
+            start = mktime(appt->tf->start);
+            end = mktime(appt->tf->end);
+
+            if (end<start)
+                valid = false;
+        } else {
+            valid = false;
+        }
+    } else {
+        valid = false;
+    }
+
+    return valid;
 }
 
