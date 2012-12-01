@@ -10,6 +10,7 @@
 
 struct cal {
     struct vector *appts;
+    struct vector *todos;
 };
 
 struct cal * cal_init ();
