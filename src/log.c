@@ -14,7 +14,6 @@
 static char _log_file[FILE_PATH_SIZE] = {'\0'};
 static bool _log_open = false;
 static enum LogLevel _log_level = LL_WARNING;
-//static FILE * _log_handle;
 
 
 static inline const char * _get_ll_str(enum LogLevel ll)
@@ -42,6 +41,7 @@ static inline const char * _get_ll_str(enum LogLevel ll)
     return str;
 }
 
+
 void do_log (enum LogLevel ll, const char *fmt, ...)
 {
     va_list ap;
@@ -63,7 +63,6 @@ void do_log (enum LogLevel ll, const char *fmt, ...)
 
     log_level_str = _get_ll_str(ll);
 
-    /* TODO: thread-safe */
     /* If log file is not set or cannot open the _log_file, log to
      * stderr. Otherwise to the _logfile */
     if (_log_file[0]=='\0' || _log_open) {
@@ -97,6 +96,7 @@ void do_log (enum LogLevel ll, const char *fmt, ...)
         fprintf(stderr, "\n");
     }
 }
+
 
 bool log_set_file (const char *filename)
 {
