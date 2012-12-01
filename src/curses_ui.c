@@ -184,7 +184,7 @@ static char * get_string(WINDOW *win, char *str, const char *prompt)
         tmp[0] = '\0';
     }
 
-    success = ui_get_string(win, 0, 0, prompt, &tmp, &size);
+    success = ui_edit_string(win, 0, 0, prompt, &tmp, &size);
 
     if (success) {
         /* "Compact" the string */
@@ -245,7 +245,6 @@ static struct tm * get_time(WINDOW *win, struct tm *oldtm, const char *prompt)
 }
 
 
-/* TODO: check that appt is valid before adding */
 static int ui_add_appt (WINDOW **wins, struct settings *set,
                         struct cal *cal)
 {
