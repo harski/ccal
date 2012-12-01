@@ -487,11 +487,11 @@ int ui_show_dump (WINDOW **wins, struct settings *set, struct cal *cal)
 static void show_main_menu(WINDOW **wins, struct settings *set, struct cal *cal)
 {
     int line = 1;
-    update_top_bar(wins[W_TOP_BAR], set, "q:Quit  s:Save cal  d:Dump all appts");
+    update_top_bar(wins[W_TOP_BAR], set, "q:Quit  s:Save cal  D:Dump all entries");
 
     werase(wins[W_CONTENT]);
-    mvwprintw(wins[W_CONTENT], line++, 0, "a: show day agenda");
-    mvwprintw(wins[W_CONTENT], line++, 0, "A: add a new appt");
+    mvwprintw(wins[W_CONTENT], line++, 0, "d: show day agenda");
+    mvwprintw(wins[W_CONTENT], line++, 0, "a: add a new appoitment");
 
     wrefresh(wins[W_CONTENT]);
 
@@ -522,13 +522,13 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
 
         select = wgetch(wins[W_INPUT_BAR]);
         switch (select) {
-        case 'A':
+        case 'a':
             ui_add_appt(wins, set, cal);
             break;
-        case 'a':
+        case 'd':
             ui_agenda_menu(wins, set, cal);
             break;
-        case 'd':
+        case 'D':
             ui_show_dump(wins, set, cal);
             break;
         case 'q':
