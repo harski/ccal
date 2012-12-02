@@ -18,14 +18,12 @@
 struct appt *appt_init()
 {
     struct appt *appt = malloc(sizeof(struct appt));
-    struct timeframe *tf = malloc(sizeof(struct timeframe));
+    struct timeframe *tf = timeframe_init();
 
     if (appt==NULL || tf==NULL)
         goto init_error;
 
     appt->tf = tf;
-    tf->start = NULL;
-    tf->end = NULL;
 
     appt->header = NULL;
     appt->description = NULL;
@@ -35,7 +33,7 @@ struct appt *appt_init()
 
 init_error:
     free(appt);
-    free(tf);
+    timeframe_destroy(tf);
     return NULL;
 }
 
