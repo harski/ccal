@@ -8,6 +8,7 @@
 #include "enter.h"
 #include "log.h"
 #include "strutils.h"
+#include "todo.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,6 +40,7 @@ static inline void prev_day (struct tm *tm);
 static bool same_day (const struct tm *t1, const struct tm *t2);
 static int ui_add_appt (WINDOW **win, struct settings *set,
                   struct cal *cal);
+static int ui_add_todo(WINDOW **wins, struct settings *set, struct cal *cal);
 static void ui_init_color(const struct settings *set);
 static int ui_show_day_agenda (WINDOW *win, const struct tm *day, const struct settings *set,
                                const struct cal *cal);
@@ -328,6 +330,105 @@ static int ui_add_appt (WINDOW **wins, struct settings *set,
 }
 
 
+static void print_todo (WINDOW *win, const struct todo *todo)
+{
+    const int start_col = 2;
+    const int start_content = 15;
+    const int start_line = 2;
+    const size_t size = 32;
+    char timestr[size];
+
+    mvwprintw(win, start_line+TODO_HEADER, start_col, "Header: ");
+    if (todo->header!=NULL)
+        mvwprintw(win, start_line+TODO_HEADER, start_content, "%s", todo->header);
+
+    mvwprintw(win, start_line+TODO_DESCRIPTION, start_col, "Description: ");
+    if (todo->description!=NULL)
+        mvwprintw(win, start_line+TODO_DESCRIPTION, start_content, "%s", todo->description);
+
+    mvwprintw(win, start_line+TODO_CATEGORY, start_col, "Category: ");
+    if (todo->category!=NULL)
+        mvwprintw(win, start_line+TODO_CATEGORY, start_content, "%s", todo->category);
+
+    mvwprintw(win, start_line+TODO_STATUS, start_col, "Status: ");
+    mvwprintw(win, start_line+TODO_STATUS, start_content, "%s", todo_get_status_name(todo->status));
+
+    mvwprintw(win, start_line+TODO_DEADLINE, start_col, "Deadline: ");
+    if (todo->deadline!=NULL) {
+        tmtostr(todo->deadline, timestr, size);
+        mvwprintw(win, start_line+TODO_DEADLINE, start_content, "%s", timestr);
+    }
+
+    /* TODO: Add the scheduled times */
+
+    wrefresh(win);
+}
+
+
+static int ui_add_todo(WINDOW **wins, struct settings *set, struct cal *cal)
+{
+    bool loop = true;
+    int success = 1;
+    struct todo *todo = todo_init();
+
+    clear_all_wins(wins);
+    update_top_bar(wins[W_TOP_BAR], set, "q:Return  h:Edit header");
+
+    while (loop) {
+        /* Update todo information */
+        wclear(wins[W_CONTENT]);
+        print_todo(wins[W_CONTENT], todo);
+
+        switch (wgetch(wins[W_INPUT_BAR])) {
+        case 'c':
+            todo->category = get_string(wins[W_INPUT_BAR], todo->category, "Category");
+            break;
+        case 'd':
+            todo->description = get_string(wins[W_INPUT_BAR], todo->description, "Description");
+            break;
+        case 'D':
+            todo->deadline = get_time(wins[W_INPUT_BAR], todo->deadline, "Deadline");
+            break;
+        case 'h':
+            todo->header = get_string(wins[W_INPUT_BAR], todo->header, "Header");
+            break;
+        case 'q':
+            /* Check if todo is valid */
+            if (todo_validate(todo)) {
+                /* Ask if entry is to be saved */
+                if (ui_get_yes_no(wins[W_INPUT_BAR], 0, 0, "Save this entry?", 'y')) {
+                    vector_add(cal->todos, todo);
+                    set->cal_changed = true;
+                } else {
+                    todo_destroy(todo);
+                    success = 0;
+                }
+
+                loop = false;
+
+            } else { /* Todo is not valid */
+                if(ui_get_yes_no(wins[W_INPUT_BAR], 0, 0, "Entry is invalid, discard?", 'n')) {
+                    loop = false;
+                    todo_destroy(todo);
+                    success = 0;
+                }
+            }
+            break;
+        case 's':
+            /* TODO: get the scheduled in some intelligent way */
+            break;
+        case 'S':
+            todo->status = (todo->status + 1) % TS_COUNT;
+            break;
+        default:
+            break;
+        }
+    }
+
+    return success;
+}
+
+
 /* TODO: check if it is possible to set sensible themes for
  * non-color terminals. I.e. have ui_init_color() set also
  * attributes for no-color mode */
@@ -492,7 +593,8 @@ static void show_main_menu(WINDOW **wins, struct settings *set, struct cal *cal)
 
     werase(wins[W_CONTENT]);
     mvwprintw(wins[W_CONTENT], line++, 0, "d: show day agenda");
-    mvwprintw(wins[W_CONTENT], line++, 0, "a: add a new appoitment");
+    mvwprintw(wins[W_CONTENT], line++, 0, "a: add a new appointment");
+    mvwprintw(wins[W_CONTENT], line++, 0, "t: add a new todo");
 
     wrefresh(wins[W_CONTENT]);
 
@@ -543,6 +645,9 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
             if (set->cal_changed)
                 cal_save(cal, set->cal_file);
             set->cal_changed = false;
+            break;
+        case 't':
+            ui_add_todo(wins, set, cal);
             break;
         default:
             break;

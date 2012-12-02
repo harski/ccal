@@ -16,7 +16,8 @@ enum Status {
     TS_SCHEDULED,
     TS_WAITING,
     TS_CANCELLED,
-    TS_DONE
+    TS_DONE,
+    TS_COUNT
 };
 
 enum TodoField {
