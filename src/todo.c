@@ -20,11 +20,14 @@ struct todo *todo_init()
 
     if (v==NULL)
         goto todo_init_fail;
+    else
+        t->scheduled = v;
 
     t->header = NULL;
     t->description = NULL;
     t->category = NULL;
     t->status = TS_TODO;
+    t->deadline = NULL;
 
     return t;
 
