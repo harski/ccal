@@ -7,7 +7,7 @@
 
 struct timeframe * timeframe_init()
 {
-    struct timeframe *tf = malloc(sizeof(tf));
+    struct timeframe *tf = malloc(sizeof(struct timeframe));
     if (tf!=NULL) {
         tf->start = NULL;
         tf->end = NULL;
