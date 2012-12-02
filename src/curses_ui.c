@@ -213,7 +213,6 @@ static char * get_string(WINDOW *win, char *str, const char *prompt)
  * Returns the address of current struct tm, or NULL on error or cancel */
 static struct tm * get_time(WINDOW *win, struct tm *oldtm, const char *prompt)
 {
-    size_t size = 32;
     struct tm *ret;
     struct tm *tm = malloc(sizeof(struct tm));
 
@@ -308,8 +307,10 @@ static int ui_add_appt (WINDOW **wins, struct settings *set,
                     loop = false;
 
                 } else { /* Appt is not valid */
-                    if(ui_get_yes_no(wins[W_INPUT_BAR], 0, 0, "Entry is invalid, discard?", 'n'))
+                    if(ui_get_yes_no(wins[W_INPUT_BAR], 0, 0, "Entry is invalid, discard?", 'n')) {
                         loop = false;
+                        appt_destroy(appt);
+                    } /* if we don't want to "discard", do nothing */
                 }
             }
             break;
