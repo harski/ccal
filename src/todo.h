@@ -19,6 +19,14 @@ enum Status {
     TS_DONE
 };
 
+enum TodoField {
+    TODO_HEADER,
+    TODO_DESCRIPTION,
+    TODO_CATEGORY,
+    TODO_STATUS,
+    TODO_SCHEDULED,
+    TODO_DEADLINE
+};
 
 struct todo {
     char *header;
@@ -31,6 +39,7 @@ struct todo {
 
 struct todo *todo_init();
 void todo_destroy (struct todo *todo);
+const char * todo_get_status_name (enum Status s);
 int todo_parse_properties (struct todo *todo, char *key, char *value);
 bool todo_save (FILE *file, struct todo *todo);
 bool todo_validate (struct todo *todo);

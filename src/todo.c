@@ -46,6 +46,35 @@ void todo_destroy (struct todo *todo)
 }
 
 
+const char * todo_get_status_name (enum Status s)
+{
+    char * ret;
+
+    switch (s) {
+    case TS_TODO:
+        ret = "TODO";
+        break;
+    case TS_SCHEDULED:
+        ret = "SCHEDULED";
+        break;
+    case TS_WAITING:
+        ret = "WAITING";
+        break;
+    case TS_CANCELLED:
+        ret = "CANCELLED";
+        break;
+    case TS_DONE:
+        ret = "DONE";
+        break;
+    default:
+        ret = "Unknown";
+        break;
+    }
+
+    return ret;
+}
+
+
 int todo_parse_properties (struct todo *todo, char *key, char *value)
 {
     int retval = 1;
