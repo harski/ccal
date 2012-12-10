@@ -25,8 +25,8 @@ enum TodoField {
     TODO_DESCRIPTION,
     TODO_CATEGORY,
     TODO_STATUS,
-    TODO_SCHEDULED,
-    TODO_DEADLINE
+    TODO_DEADLINE,
+    TODO_SCHEDULED
 };
 
 struct todo {

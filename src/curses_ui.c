@@ -8,7 +8,9 @@
 #include "enter.h"
 #include "log.h"
 #include "strutils.h"
+#include "timeframe.h"
 #include "todo.h"
+#include "vector.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -44,6 +46,7 @@ static int ui_add_todo(WINDOW **wins, struct settings *set, struct cal *cal);
 static void ui_init_color(const struct settings *set);
 static int ui_show_day_agenda (WINDOW *win, const struct tm *day, const struct settings *set,
                                const struct cal *cal);
+static void ui_schedule_menu (WINDOW **wins, struct settings *set, struct vector *sch);
 static void update_top_bar (WINDOW * win, const struct settings *set,
                             const char *str);
 
@@ -415,7 +418,7 @@ static int ui_add_todo(WINDOW **wins, struct settings *set, struct cal *cal)
             }
             break;
         case 's':
-            /* TODO: get the scheduled in some intelligent way */
+                ui_schedule_menu(wins, set, todo->scheduled);
             break;
         case 'S':
             todo->status = (todo->status + 1) % TS_COUNT;
@@ -659,6 +662,79 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
     endwin();
 
     return 1;
+}
+
+
+static void ui_show_schedules (WINDOW *win, const struct vector *sch)
+{
+    const int col = 3;
+    const int row = 2;
+    char start[32];
+    char end[32];
+    struct timeframe *tf;
+    unsigned int i;
+
+    if (sch->elements==0) {
+        mvwprintw(win, row, col, "No scheduled times");
+    } else {
+        for (i = 0; i<sch->elements; ++i) {
+            tf = vector_get(sch, i);
+            tmtostr(tf->start, start, 32);
+            tmtostr(tf->end, end, 32);
+
+            mvwprintw(win, row+i, col, "%s -> %s", start, end);
+        }
+    }
+
+    wrefresh(win);
+}
+
+
+static int get_schedule_input (WINDOW *win, struct vector *sch)
+{
+    struct timeframe *tf = timeframe_init_alloc();
+    int ret;
+
+    ret = ui_get_date(win, 0, 0, "Start time", tf->start);
+    if (ret) {
+        ret = ui_get_date(win, 0, 0, "End time", tf->end);
+        if (ret && timeframe_validate(tf))
+            vector_add(sch, (void *)tf);
+    }
+
+    if (!ret)
+        timeframe_destroy(tf);
+
+    return ret;
+}
+
+
+static void ui_schedule_menu (WINDOW **wins, struct settings *set, struct vector *sch)
+{
+    bool exit = false;
+    int select;
+
+    clear_all_wins(wins);
+    update_top_bar(wins[W_TOP_BAR], set, "q:Go back  a:Add scheduled time");
+
+    while (!exit) {
+        werase(wins[W_CONTENT]);
+        ui_show_schedules(wins[W_CONTENT], sch);
+
+        select = wgetch(wins[W_INPUT_BAR]);
+
+        switch(select) {
+        case 'a':
+            get_schedule_input(wins[W_INPUT_BAR], sch);
+            break;
+        case 'q':
+            exit = true;
+            break;
+
+        default:
+            break;
+        }
+    }
 }
 
 
