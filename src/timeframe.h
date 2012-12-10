@@ -5,7 +5,7 @@
 #define TIMEFRAME_H
 
 #include <time.h>
-
+#include <stdbool.h>
 
 struct timeframe {
     struct tm *start;
@@ -16,6 +16,7 @@ struct timeframe {
 struct timeframe * timeframe_init();
 struct timeframe * timeframe_init_alloc();
 void timeframe_destroy (struct timeframe *tf);
+bool timeframe_validate (struct timeframe *tf);
 
 #endif /* TIMEFRAME_H */
 

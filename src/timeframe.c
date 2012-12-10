@@ -42,3 +42,15 @@ void timeframe_destroy (struct timeframe *tf)
     free(tf);
 }
 
+
+bool timeframe_validate (struct timeframe *tf)
+{
+    bool valid = true;
+
+    if (tf==NULL || tf->start==NULL || tf->end==NULL ||
+            mktime(tf->start) > mktime(tf->end))
+        valid = false;
+
+    return valid;
+}
+
