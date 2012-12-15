@@ -81,6 +81,7 @@ int main(int argc, char *argv[])
      * from cli: cli should take precedence! */
     settings_read_settings_file(set, set_file);
     load_cal_file(cal, set->cal_file);
+    appts_sort(cal->appts);
 
     switch (action) {
     case ACTION_DUMP:
@@ -97,6 +98,7 @@ int main(int argc, char *argv[])
 
     settings_destroy(set);
     cal_destroy(cal);
+
     return 0;
 }
 

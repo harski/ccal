@@ -302,6 +302,7 @@ static int ui_add_appt (WINDOW **wins, struct settings *set,
                     /* Ask if entry is to be saved */
                     if (ui_get_yes_no(wins[W_INPUT_BAR], 0, 0, "Save this entry?", 'y')) {
                         vector_add(cal->appts, appt);
+                        appts_sort(cal->appts);
                         set->cal_changed = true;
                         appt_added = 1;
                     } else {

@@ -35,5 +35,7 @@ void appt_dump (struct appt *appt);
 bool appt_save (FILE *file, struct appt *appt);
 bool appt_validate (struct appt *appt);
 
+void appts_sort (struct vector *appts);
+
 #endif /* ENTRY_H */
 

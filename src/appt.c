@@ -174,3 +174,68 @@ bool appt_validate (struct appt *appt)
     return valid;
 }
 
+
+/* Merge sort */
+static void _sort (struct appt **a, size_t size)
+{
+    struct appt **left;
+    struct appt **right;
+    size_t left_size = size/2;
+    size_t right_size = size - left_size;
+    unsigned int i, l, r;
+
+    if (size <=1)
+        return;
+
+    left = malloc(sizeof(struct appt *) * left_size);
+    right = malloc(sizeof(struct appt *) * right_size);
+
+    for (i=0; i<left_size; ++i)
+        left[i] = a[i];
+
+    for (i=0; i<right_size; ++i)
+        right[i] = a[left_size+i];
+
+    _sort(left, left_size);
+    _sort(right, right_size);
+
+    i = l = r = 0;
+    while (i<size) {
+        if (l==left_size) {
+            a[i] = right[r++];
+        } else if (r==right_size) {
+            a[i] = left[l++];
+        } else {
+            if (mktime(left[l]->tf->start) <= mktime(right[r]->tf->start))
+                a[i] = left[l++];
+            else
+                a[i] = right[r++];
+        }
+
+        ++i;
+    }
+
+    free(left);
+    free(right);
+}
+
+
+void appts_sort (struct vector *appts)
+{
+    struct appt **a;
+    size_t size = appts->elements;
+
+    if (size != 0) {
+        a = malloc(size*sizeof(struct appt *));
+
+        for (unsigned int i=0; i<size; ++i)
+            a[i] = vector_remove(appts, size-1-i);
+
+        _sort(a, size);
+
+        for (unsigned int i=0; i<size; ++i)
+            vector_add(appts, a[i]);
+    }
+}
+
+
