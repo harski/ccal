@@ -25,22 +25,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* Acquired from https://github.com/harski/libvector on 2012-11-20.
- * Version 0.5 */
+/* Acquired from https://github.com/harski/libvector on 2012-12-18.
+ * Version 0.6 */
+
 
 #ifndef VECTOR_H
 #define VECTOR_H
 
 #include <stddef.h>
-
-#ifdef __GNUC__
-#define DEPRECATED(func) func __attribute__ ((deprecated))
-#elif defined(_MSC_VER)
-#define DEPRECATED(func) __declspec(deprecated) func
-#else
-#pragma message("WARNING: You need to implement DEPRECATED for this compiler")
-#define DEPRECATED(func) func
-#endif
 
 #define VECTOR_DEFAULT_SIZE 8
 
@@ -76,11 +68,18 @@ void vector_destroy (struct vector *v);
  * Returns the element in the index if such exists, otherwise NULL. */
 void * vector_get (const struct vector *v, unsigned int index);
 
+/* Get the last element in the vector v, or NULL if v is empty. */
+void * vector_get_last (const struct vector *v);
+
 /* Remove element from index specified by the "index" parameter from the vector
  * v and return it to the caller.
  * Returns the element at the index "index", or NULL if no such element
  * exists. */
 void * vector_remove (struct vector *v, unsigned int index);
+
+/* Remove the last element of the vector v and return it. If v is empty NULL
+ * return NULL. */
+void * vector_remove_last (struct vector *v);
 
 /* Compacts the pointer array in vector v to be as small as possible. */
 void vector_compact (struct vector *v);

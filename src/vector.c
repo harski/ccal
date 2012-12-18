@@ -11,12 +11,15 @@
 static int vector_resize (struct vector *v, size_t size)
 {
     if (size > 0) {
-        void * tmp = malloc(size*sizeof(void *));
-        if (tmp==NULL) return 0;
+        void ** tmp = (void **) malloc(size*sizeof(void *));
+        if (tmp==NULL)
+            return 0;
 
         memcpy(tmp, v->list, v->elements*sizeof(void*));
+
         free(v->list);
         v->list = tmp;
+        v->size = size;
     }
 
     return size;
@@ -62,7 +65,7 @@ struct vector * vector_init_size (size_t size)
     if (v==NULL)
         return NULL;
 
-    v->list = malloc(size*sizeof(void *));
+    v->list = (void **) malloc(size*sizeof(void *));
 
     v->size = size;
     v->elements = 0;
@@ -87,22 +90,38 @@ void * vector_get (const struct vector *v, unsigned int index)
 }
 
 
+void * vector_get_last (const struct vector *v)
+{
+    if (v->elements==0)
+        return NULL;
+    else
+        return vector_get (v, v->elements - 1);
+}
+
+
 void * vector_remove (struct vector *v, unsigned int index)
 {
     void *tmp;
-    unsigned int i;
 
     if (v->elements <= index)
         return NULL;
 
     tmp = v->list[index];
 
-    for (i = index; i < v->elements-1; ++i)
-        v->list[i] = v->list[i+1];
+    memmove(v->list+index, v->list+index+1, (v->elements-index-1)*sizeof(void *));
 
     v->elements -= 1;
 
     return tmp;
+}
+
+
+void * vector_remove_last (struct vector *v)
+{
+    if (v->elements==0)
+        return NULL;
+    else
+        return vector_remove(v, v->elements - 1);
 }
 
 
