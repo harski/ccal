@@ -229,7 +229,7 @@ void appts_sort (struct vector *appts)
         a = malloc(size*sizeof(struct appt *));
 
         for (unsigned int i=0; i<size; ++i)
-            a[i] = vector_remove(appts, size-1-i);
+            a[i] = vector_remove_last(appts);
 
         _sort(a, size);
 
