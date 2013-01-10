@@ -165,3 +165,35 @@ bool todo_validate (struct todo *todo)
     return true;
 }
 
+
+struct todo_entry *todo_entry_init_deadline (const struct todo *todo)
+{
+    struct todo_entry *entry = (struct todo_entry *)
+                                malloc(sizeof(struct todo_entry));
+    entry->todo = (void *) todo;
+    entry->type = ENTRY_TODO_DEADLINE;
+    entry->deadline = todo->deadline;
+
+    return entry;
+}
+
+
+struct todo_entry *todo_entry_init_scheduled (const struct todo *todo,
+                                              const struct timeframe *tf)
+{
+    struct todo_entry *entry = (struct todo_entry *)
+                                malloc(sizeof(struct todo_entry));
+    entry->todo = (void *) todo;
+    entry->type = ENTRY_TODO_SCHEDULED;
+    entry->scheduled = tf;
+
+    return entry;
+
+}
+
+
+void todo_entry_destroy (struct todo_entry *todo)
+{
+    free(todo);
+}
+

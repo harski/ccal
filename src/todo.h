@@ -29,6 +29,11 @@ enum TodoField {
     TODO_SCHEDULED
 };
 
+enum todo_type {
+    ENTRY_TODO_DEADLINE,
+    ENTRY_TODO_SCHEDULED
+};
+
 struct todo {
     char *header;
     char *description;
@@ -38,12 +43,28 @@ struct todo {
     struct tm *deadline;
 };
 
+struct todo_entry {
+    void *todo;
+    enum todo_type type;
+
+    union {
+        const struct timeframe *scheduled;
+        const struct tm *deadline;
+    };
+};
+
+
 struct todo *todo_init();
 void todo_destroy (struct todo *todo);
 const char * todo_get_status_name (enum Status s);
 int todo_parse_properties (struct todo *todo, char *key, char *value);
 bool todo_save (FILE *file, struct todo *todo);
 bool todo_validate (struct todo *todo);
+
+struct todo_entry *todo_entry_init_deadline (const struct todo *todo);
+struct todo_entry *todo_entry_init_scheduled (const struct todo *todo,
+                                              const struct timeframe *tf);
+void todo_entry_destroy (struct todo_entry *todo);
 
 #endif /* TODO_H */
 
