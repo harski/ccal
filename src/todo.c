@@ -1,4 +1,4 @@
-/* Copyright (C) 2012 Tuomo Hartikainen <hartitu@gmail.com>
+/* Copyright (C) 2012-2013 Tuomo Hartikainen <hartitu@gmail.com>
  * Licensed under GPLv3, see LICENSE for more information. */
 
 #define _XOPEN_SOURCE
