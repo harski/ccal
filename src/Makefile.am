@@ -21,6 +21,8 @@ ccal_SOURCES = \
     strutils.h \
     timeframe.c \
     timeframe.h \
+	timeutils.c \
+	timeutils.h \
     todo.c \
     todo.h \
 	vector.h \

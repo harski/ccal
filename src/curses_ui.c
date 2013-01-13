@@ -9,6 +9,7 @@
 #include "log.h"
 #include "strutils.h"
 #include "timeframe.h"
+#include "timeutils.h"
 #include "todo.h"
 #include "vector.h"
 #include <stdbool.h>
@@ -34,12 +35,8 @@ enum WindowNames {
 
 static bool appt_is_today(const struct appt *appt, const struct tm *tm);
 static void clear_all_wins(WINDOW **wins);
-static inline struct tm *get_today();
 static void destroy_windows(WINDOW **wins);
 static WINDOW **init_windows();
-static inline void next_day (struct tm *tm);
-static inline void prev_day (struct tm *tm);
-static bool same_day (const struct tm *t1, const struct tm *t2);
 static int ui_add_appt (WINDOW **win, struct settings *set,
                   struct cal *cal);
 static int ui_add_todo(WINDOW **wins, struct settings *set, struct cal *cal);
@@ -86,45 +83,10 @@ static bool appt_is_today(const struct appt *appt, const struct tm *tm)
 }
 
 
-static inline struct tm *get_today()
-{
-    struct tm * tm =  malloc(sizeof(struct tm));
-    time_t tmp_time = time(NULL);
-    return localtime_r(&tmp_time, tm);
-}
-
-
-static inline void next_day (struct tm *tm)
-{
-    time_t now = mktime(tm);
-    now += 60*60*24;
-    localtime_r(&now, tm);
-}
-
-
-static inline void prev_day (struct tm *tm)
-{
-    time_t now = mktime(tm);
-    now -= 60*60*24;
-    localtime_r(&now, tm);
-
-}
-
-
 static void clear_all_wins(WINDOW **wins)
 {
     for(int i=0; i<W_COUNT; ++i)
         wclear(wins[i]);
-}
-
-
-static bool same_day (const struct tm *t1, const struct tm *t2)
-{
-    if (t1->tm_year == t2->tm_year && t1->tm_mon == t2->tm_mon &&
-        t1->tm_mday == t2->tm_mday)
-        return true;
-
-    return false;
 }
 
 
@@ -483,7 +445,7 @@ static inline void print_agenda_day_appt (WINDOW *win, const struct appt *appt, 
 int ui_agenda_menu (WINDOW **wins, struct settings *set, struct cal *cal)
 {
     bool loop = true;
-    struct tm *day = get_today();
+    struct tm *day = get_today(NULL);
     char select;
 
     clear_all_wins(wins);
@@ -531,6 +493,8 @@ static int ui_show_day_agenda (WINDOW *win, const struct tm *day,
 
     mvwprintw(win, 1, 0, time_str);
 
+    /* TODO: Istead of this, ask for a list of appts and todo_entries as a vector
+     * and print them */
     for(unsigned int i=0; i < appts->elements && (unsigned)winx > i; ++i) {
         appt = (struct appt *) vector_get(appts, i);
         if (appt_is_today(appt, day))
@@ -617,7 +581,7 @@ int ui_show_main_view (struct settings *set, struct cal *cal)
     bool exit = false;
     char select;
     WINDOW * main_win;
-    struct tm *today = get_today();
+    struct tm *today = get_today(NULL);
 
     WINDOW ** wins = ui_init(set);
 
