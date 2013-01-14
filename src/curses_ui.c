@@ -33,7 +33,6 @@ enum WindowNames {
 };
 
 
-static bool appt_is_today(const struct appt *appt, const struct tm *tm);
 static void clear_all_wins(WINDOW **wins);
 static void destroy_windows(WINDOW **wins);
 static WINDOW **init_windows();
@@ -41,8 +40,8 @@ static int ui_add_appt (WINDOW **win, struct settings *set,
                   struct cal *cal);
 static int ui_add_todo(WINDOW **wins, struct settings *set, struct cal *cal);
 static void ui_init_color(const struct settings *set);
-static int ui_show_day_agenda (WINDOW *win, const struct tm *day, const struct settings *set,
-                               const struct cal *cal);
+static int ui_show_day_agenda (WINDOW *win, struct tm *day,
+                               const struct settings *set, const struct cal *cal);
 static void ui_schedule_menu (WINDOW **wins, struct settings *set, struct vector *sch);
 static void update_top_bar (WINDOW * win, const struct settings *set,
                             const char *str);
@@ -71,15 +70,6 @@ static void destroy_windows(WINDOW **wins)
 {
     for (int i=W_TOP_BAR; i<W_COUNT; ++i)
         delwin(wins[i]);
-}
-
-
-static bool appt_is_today(const struct appt *appt, const struct tm *tm)
-{
-    if (same_day(appt->tf->start, tm) || same_day(appt->tf->end, tm))
-        return true;
-
-    return false;
 }
 
 
@@ -476,14 +466,13 @@ int ui_agenda_menu (WINDOW **wins, struct settings *set, struct cal *cal)
 }
 
 
-static int ui_show_day_agenda (WINDOW *win, const struct tm *day,
-                               const struct settings *set, const struct cal *cal)
+static int ui_show_day_agenda (WINDOW *win, struct tm *day,
+                               const struct settings *set,
+                               const struct cal *cal)
 {
     char * time_str;
     int winx, winy;
-    struct vector *appts = cal->appts;
-    struct appt *appt;
-    int appts_day = 0;
+    struct vector *appts_today;
 
     getmaxyx(win, winy, winx);
     werase(win);
@@ -493,20 +482,19 @@ static int ui_show_day_agenda (WINDOW *win, const struct tm *day,
 
     mvwprintw(win, 1, 0, time_str);
 
-    /* TODO: Istead of this, ask for a list of appts and todo_entries as a vector
-     * and print them */
-    for(unsigned int i=0; i < appts->elements && (unsigned)winx > i; ++i) {
-        appt = (struct appt *) vector_get(appts, i);
-        if (appt_is_today(appt, day))
-            print_agenda_day_appt(win, appt, appts_day++);
-    }
+    appts_today = appts_get_for_day(cal->appts, day);
 
-    if (!appts_day)
+    if (appts_today!=0)
+        for (unsigned int i=0; i<appts_today->elements; ++i)
+            print_agenda_day_appt(win, (struct appt *)vector_get(appts_today, i), i);
+    else
         mvwprintw(win, 4, 3, "Nothing to do today :)");
 
     wrefresh(win);
 
+    vector_destroy(appts_today);
     free(time_str);
+
     return 1;
 }
 

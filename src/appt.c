@@ -10,6 +10,7 @@
 #include "appt.h"
 #include "log.h"
 #include "strutils.h"
+#include "timeutils.h"
 
 
 #define INPUT_BUFFER_SIZE 128
@@ -217,6 +218,31 @@ static void _sort (struct appt **a, size_t size)
 
     free(left);
     free(right);
+}
+
+
+struct vector *appts_get_for_day (const struct vector *appts,
+                                  struct tm *tm)
+{
+    unsigned int i;
+    struct appt *appt;
+    struct vector *v = vector_init();
+
+    /* TODO: This needs to be fixed: the start and end of the
+     * appointment could be at anytime. How to sort this?
+     * ATM this only catches appointments that _start_ on the
+     * desired day tm */
+    for (i=0; i<appts->elements; ++i) {
+        appt = (struct appt *) vector_get(appts, i);
+
+        if (same_day(appt->tf->start, tm))
+            vector_add(v, (void *) appt);
+    }
+
+    free(tm);
+    appts_sort(v);
+
+    return v;
 }
 
 

@@ -35,6 +35,8 @@ void appt_dump (struct appt *appt);
 bool appt_save (FILE *file, struct appt *appt);
 bool appt_validate (struct appt *appt);
 
+struct vector *appts_get_for_day (const struct vector *appts,
+                                  struct tm *tm);
 void appts_sort (struct vector *appts);
 
 #endif /* ENTRY_H */
