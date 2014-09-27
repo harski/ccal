@@ -12,7 +12,7 @@ between versions will occur.
 Compiling
 =========
 
-$ ./configure.sh
+$ ./configure
 $ make
 
 If you don't have the configure script, you need autotools to generate
